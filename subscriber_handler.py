@@ -11,5 +11,12 @@ class Subscriberhandler():
         process = subprocess.Popen(['powershell', '-NoExit', '-Command', command])
         pids.append(process.pid)
 
-    def kill_subscriber(self, pid):
-        os.kill(pid, signal.SIGTERM)
+    def kill_subscriber(self, pid, pids):
+        try:
+            os.kill(pid, signal.SIGTERM)
+            # print(f"[subhandler] Sent SIGTERM signal to process {pid}", flush=True)
+            pids.remove(pid)
+        except OSError:
+            print(f"[subhandler] Failed to send SIGTERM signal to process {pid}", flush=True)
+        
+        
