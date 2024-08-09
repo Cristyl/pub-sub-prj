@@ -1,9 +1,11 @@
-#!/usr/bin/env python
 import pika
 import sys
+import signal
 
 class Subscriber():
     def __init__(self):
+        signal.signal(signal.SIGTERM, self.sigterm_handler)
+
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='localhost'))
         channel = connection.channel()
@@ -15,15 +17,18 @@ class Subscriber():
 
         channel.queue_bind(exchange=sys.argv[1], queue=queue_name)
 
-        print(' [*] Waiting for logs. To exit press CTRL+C')
-        print(f'Hi I am receiver {sys.argv[2]}, I am connected to exchange {sys.argv[1]}')
+        print(f'[sub #{sys.argv[2]}] Connected to {sys.argv[1]} exchange. Waiting for logs', flush=True)
 
         def callback(ch, method, properties, body):
-            print(f" [x] I, receiver {sys.argv[2]}, got {body}")
+            print(f"[sub #{sys.argv[2]}] Got {body}", flush=True)
 
         channel.basic_consume(
             queue=queue_name, on_message_callback=callback, auto_ack=True)
 
         channel.start_consuming()
+
+    def sigterm_handler(self, signum, frame):
+        print(f"[sub #{sys.argv[2]}] Crashed", flush=True)
+        sys.exit(0)
 
 Subscriber()
