@@ -42,28 +42,24 @@ if __name__ == "__main__":
         exchange_name = random.choice(exchange_names)
         command = f'python publisher.py {exchange_name} {publisher_id}'
         publisher_handler.create_publisher(command, pids_publishers)
-
     # stay into the while loop till there are a pub or a sub
-    while number_of_publishers or number_of_subscribers:   
-
+    while number_of_publishers or number_of_subscribers:
         # with a certain probability kill the sub and pub candidates (the right operator can be modified)
         if number_of_subscribers and (random.uniform(0, 100) < 0.00001):
             number_of_subscribers -= 1
-
             subscriber_candidate = random.choice(pids_subscribers)
             subscriber_handler.kill_subscriber(subscriber_candidate, pids_subscribers) 
             # since it's a simulation of a sub crash, this line should be commented at the final version. The sub process will say "crashed" anyway
             print(f"[main] Killed the Sub with pid {subscriber_candidate}", flush=True)
-        
         if number_of_publishers and (random.uniform(0, 100) < 0.00001):
             number_of_publishers -= 1
-            
             publisher_candidate = random.choice(pids_publishers)
             publisher_handler.kill_publisher(publisher_candidate, pids_publishers)
             # since it's a simulation of a pub crash, this line should be commented at the final version. The pub process will say "crashed" anyway
             print(f"[main] Killed the Pub with pid {publisher_candidate}", flush=True)
 
-        # time.sleep(0.1)
+        time.sleep(0.1)
+        
     
     print("[main] -----------------------------", flush=True)
     print("[main] Simulation completed", flush=True)
