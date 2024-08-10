@@ -18,8 +18,8 @@ class Publisher():
 
         message = f"'Hello World! #{sys.argv[2]}'"
         
-        messages_to_send = 20
-        while messages_to_send:
+        messages_to_send = 5
+        while True:
             channel.basic_publish(exchange=sys.argv[1], routing_key='', body=message)        
             print(f"[pub #{sys.argv[2]}] Sent {message}", flush=True)
             messages_to_send -= 1

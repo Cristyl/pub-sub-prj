@@ -8,14 +8,14 @@ class Subscriberhandler():
         self.exchange_names = exchange_names
 
     def create_subscriber(self, command, pids):
-        process = subprocess.Popen(['powershell', '-NoExit', '-Command', command])
+        process = subprocess.Popen(command)
         pids.append(process.pid)
-
+         
     def kill_subscriber(self, pid, pids):
         try:
             os.kill(pid, signal.SIGTERM)
-            # print(f"[subhandler] Sent SIGTERM signal to process {pid}", flush=True)
             pids.remove(pid)
+            # print(f"[subhandler] Sent SIGTERM signal to process {pid}", flush=True)
         except OSError:
             print(f"[subhandler] Failed to send SIGTERM signal to process {pid}", flush=True)
         

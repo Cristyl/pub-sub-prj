@@ -8,13 +8,13 @@ class Publisherhandler():
         self.exchange_names = exchange_names
 
     def create_publisher(self, command, pids):
-        process = subprocess.Popen(['powershell', '-NoExit', '-Command', command])
+        process = subprocess.Popen(command)
         pids.append(process.pid)
 
     def kill_publisher(self, pid, pids):
         try:
             os.kill(pid, signal.SIGTERM)
-            # print(f"[pubhandler] Sent SIGTERM signal to process {pid}", flush=True)
             pids.remove(pid)
+            # print(f"[pubhandler] Sent SIGTERM signal to process {pid}", flush=True)
         except OSError:
             print(f"[pubhandler] Failed to send SIGTERM signal to process {pid}", flush=True)
