@@ -4,6 +4,7 @@ import signal
 
 class Subscriber():
     def __init__(self):
+        # setup signal handler for SIGTERM
         signal.signal(signal.SIGTERM, self.sigterm_handler)
 
         connection = pika.BlockingConnection(
@@ -27,7 +28,7 @@ class Subscriber():
 
         channel.start_consuming()
 
-    def sigterm_handler(self, signum, frame):
+    def sigterm_handler():
         print(f"[sub #{sys.argv[2]}] Crashed", flush=True)
         sys.exit(0)
 
