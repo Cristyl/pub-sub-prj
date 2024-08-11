@@ -5,6 +5,7 @@ import signal
 
 class Publisher():
     def __init__(self):
+        # setup signal handler for SIGTERM
         signal.signal(signal.SIGTERM, self.sigterm_handler)
 
         connection = pika.BlockingConnection(
@@ -18,18 +19,17 @@ class Publisher():
 
         message = f"'Hello World! #{sys.argv[2]}'"
         
-        messages_to_send = 5
+        # messages_to_send = 5
         while True:
             channel.basic_publish(exchange=sys.argv[1], routing_key='', body=message)        
             print(f"[pub #{sys.argv[2]}] Sent {message}", flush=True)
-            messages_to_send -= 1
+            # messages_to_send -= 1
             time.sleep(1)
 
         connection.close()
 
-    def sigterm_handler(self, signum, frame):
+    def sigterm_handler():
         print(f"[pub #{sys.argv[2]}] Crashed", flush=True)
         sys.exit(0)
-    
 
 Publisher()

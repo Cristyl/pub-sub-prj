@@ -10,7 +10,7 @@ class Subscriberhandler():
     def create_subscriber(self, command, pids):
         process = subprocess.Popen(command)
         pids.append(process.pid)
-         
+
     def kill_subscriber(self, pid, pids):
         try:
             os.kill(pid, signal.SIGTERM)
