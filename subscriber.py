@@ -11,14 +11,21 @@ class Subscriber():
             pika.ConnectionParameters(host='localhost'))
         channel = connection.channel()
 
-        channel.exchange_declare(exchange=sys.argv[1], exchange_type='fanout')
+        channel.exchange_declare(exchange=sys.argv[1], exchange_type='topic')
 
         result = channel.queue_declare(queue='', exclusive=True)
         queue_name = result.method.queue
 
-        channel.queue_bind(exchange=sys.argv[1], queue=queue_name)
+        binding_keys = sys.argv[3:]
+        if not binding_keys:
+            sys.stderr.write("Usage: %s [binding_key]...\n" % sys.argv[0])
+            sys.exit(1)
 
-        print(f'[sub #{sys.argv[2]}] Connected to {sys.argv[1]} exchange. Waiting for logs', flush=True)
+        for binding_key in binding_keys:
+            channel.queue_bind(
+                exchange=sys.argv[1], queue=queue_name, routing_key=binding_key)
+
+        print(f'[sub #{sys.argv[2]}] Connected to {sys.argv[1]} exchange and topics {binding_keys}. Waiting for logs', flush=True)
 
         def callback(ch, method, properties, body):
             print(f"[sub #{sys.argv[2]}] Got {body}", flush=True)
