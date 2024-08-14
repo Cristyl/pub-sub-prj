@@ -1,45 +1,74 @@
 import random
 
+from publisher_handler  import Publisherhandler
+from subscriber_handler import Subscriberhandler
+
 random.seed(42)
 
-#possible arguments for the topic
-topic1 = ['q', 'w', 'e', '*', '#']
-topic2 = ['r', 't', 'y', '*', '#']
-topic3 = ['u', 'i', 'o', '*']
+class CONST(object):
 
-def exchange_names():
-    return ['logs1', 'logs2', 'logs3', 'logs4']
+    EXCHANGE_NAMES = ['logs1', 'logs2', 'logs3', 'logs4']
+    TOPIC1         = ['saturn', 'earth', 'mars', '*', '#']
+    TOPIC2         = ['red', 'blue', 'grey', '*', '#']
+    TOPIC3         = ['indie', 'rock', 'synthwave', '*']
+    KILL_PROBABILITY    = 0.00001
+    CREATION_PROBABILIY = 0.000005
+    MAX_DURATION        = 60
 
-def kill_probability():
-    return 0.00001
+    def __setattr__(self, *_):
+        pass
 
-def creation_probability():
-    return 0.000005
+CONST = CONST()
 
-def max_duration():
-    return 60
+# create the publisher and subscriber handlers
+publisher_handler  = Publisherhandler()
+subscriber_handler = Subscriberhandler()
 
-#function that creates topics ['#' as topic is equal to having a fanout]
+# create a new publisher or a new subscriber
+def create_node(exchanges, id, type):
+    topic = create_topic(type)
+    exchange_name = random.choice(exchanges)
+    command = f'python {type}.py {exchange_name} {id} {topic}'
+    if (type == 'publisher'):
+        publisher_handler.create_publisher(command)
+    elif (type == 'subscriber'):
+        subscriber_handler.create_subscriber(command)
+
+# delete a publisher or a subscriber
+def delete_node(pid, type):
+    candidate = pid
+    if (type == 'publisher'):
+        publisher_handler.kill_publisher(candidate)
+        print(f"[main] Killed the Pub with pid {candidate}", flush=True)
+    elif (type == 'subscriber'):
+        subscriber_handler.kill_subscriber(candidate)
+        # since it's a simulation of a sub crash, this line should be commented at the final version.
+        # The sub process will say "crashed" anyway
+        print(f"[main] Killed the Sub with pid {candidate}", flush=True)
+
+# creates a topic
+# [topic excahnge with only the '#' binding, becomes a fanout exchange]
+# [topic excahnge without '#' and '*' bindings, becomes a direct exchange]
 def create_topic(type):
-    topic = create_single_topic()
+    topic = compose_topic()
     if type == 'subscriber':
+        # creating more than one binding for that sub
         for _ in range(random.randint(0, 2)):
-            topic += ' ' + create_single_topic()
-        return topic
-    elif type == 'publisher':
+            topic += ' ' + compose_topic()
+    return topic
+
+def compose_topic():
+    label = random.choice(CONST.TOPIC1)
+    topic = label
+    if label == '#':
         return topic
 
-def create_single_topic():
-    topic = ''
-    chosen_topic1 = random.choice(topic1)
-    topic += chosen_topic1
-    if chosen_topic1 == '#':
+    label = random.choice(CONST.TOPIC2)
+    topic += ('.' + label)
+    if label == '#':
         return topic
-    
-    chosen_topic2 = random.choice(topic2)
-    topic += '.' + chosen_topic2
-    if chosen_topic2 == '#':
-        return topic
-    
-    topic += '.' + random.choice(topic3)
+
+    label = random.choice(CONST.TOPIC3)
+    topic += ('.' + label)
+
     return topic
