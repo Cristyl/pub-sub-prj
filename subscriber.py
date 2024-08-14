@@ -28,7 +28,7 @@ class Subscriber():
         print(f'[sub #{sys.argv[2]}] Connected to {sys.argv[1]} exchange and topics {binding_keys}. Waiting for logs', flush=True)
 
         def callback(ch, method, properties, body):
-            print(f"[sub #{sys.argv[2]}] Got {body}", flush=True)
+            print(f"[sub #{sys.argv[2]}] Got {method.routing_key}:{body}", flush=True)
 
         channel.basic_consume(
             queue=queue_name, on_message_callback=callback, auto_ack=True)
