@@ -31,6 +31,8 @@ if __name__ == "__main__":
     for publisher_id in range(number_of_publishers):
         create_node(exchange_names, publisher_id, 'publisher')
 
+    elapsed = 0
+
     # stay into the while loop till there is a pub or a sub
     while number_of_publishers or number_of_subscribers:
         # with a certain probability kill the sub and pub candidates (the right operator can be modified)
@@ -54,20 +56,24 @@ if __name__ == "__main__":
             print(f"[main] Sub #{number_of_subscribers} has joined", flush=True)
             number_of_subscribers += 1
 
-        #end the simulation after a certain time [works for few pub/sub but not for longer ones]
+        # end the simulation after a certain time
         if time() - start_time >= CONST.MAX_DURATION:
-            print("[main] The maximum execution time (60s) has expired", flush=True)
-            print("[main] The simulation is about to terminate", flush=True)
+
+            elapsed = 1
 
             for subscriber in subscriber_handler.pids:
                 delete_node(subscriber, 'subscriber')
+                number_of_subscribers -= 1
 
             for publisher in publisher_handler.pids:
                 delete_node(publisher, 'publisher')
+                number_of_publishers -= 1
 
-            break
-
-    sleep(1) # to wait all the messages of pubs/subs to be flushed
+    if (elapsed):
+        sleep(1)
+        print("[main] The maximum execution time (60s) has expired")
+        print("[main] The simulation is about to terminate")
+        sleep(1)
 
     print("[main] -----------------------------", flush=True)
     print("[main] Simulation completed", flush=True)
