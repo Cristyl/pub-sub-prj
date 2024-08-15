@@ -35,7 +35,7 @@ class Subscriber():
 
         channel.start_consuming()
 
-    def sigterm_handler():
+    def sigterm_handler(self, sig, frame):
         print(f"[sub #{sys.argv[2]}] Crashed", flush=True)
         sys.exit(0)
 

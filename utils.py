@@ -28,7 +28,7 @@ subscriber_handler = Subscriberhandler()
 def create_node(exchanges, id, type):
     topic = create_topic(type)
     exchange_name = random.choice(exchanges)
-    command = f'python {type}.py {exchange_name} {id} {topic}'
+    command = ['python3', type + '.py', exchange_name, str(id), topic]
     if (type == 'publisher'):
         publisher_handler.create_publisher(command)
     elif (type == 'subscriber'):
@@ -39,12 +39,8 @@ def delete_node(pid, type):
     candidate = pid
     if (type == 'publisher'):
         publisher_handler.kill_publisher(candidate)
-        print(f"[main] Killed the Pub with pid {candidate}", flush=True)
     elif (type == 'subscriber'):
         subscriber_handler.kill_subscriber(candidate)
-        # since it's a simulation of a sub crash, this line should be commented at the final version.
-        # The sub process will say "crashed" anyway
-        print(f"[main] Killed the Sub with pid {candidate}", flush=True)
 
 # creates a topic
 # [topic excahnge with only the '#' binding, becomes a fanout exchange]

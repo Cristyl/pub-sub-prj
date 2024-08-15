@@ -1,6 +1,6 @@
 import sys
 import random
-from time import time
+from time import time, sleep
 from utils import *
 
 random.seed(42)
@@ -8,7 +8,7 @@ random.seed(42)
 if __name__ == "__main__":
     # define the number of publishers and subscribers (it can modify the upper and lower bounds)
     if len(sys.argv) != 3 or sys.argv[1].isdigit() == False or sys.argv[2].isdigit() == False:
-        print("[main] Usage: python main.py <num_of_pub> <num_of_sub>", flush=True)
+        print("[main] Usage: python3 main.py <num_of_pub> <num_of_sub>", flush=True)
         sys.exit(1)
 
     number_of_publishers  = int(sys.argv[1])
@@ -66,6 +66,8 @@ if __name__ == "__main__":
                 delete_node(publisher, 'publisher')
 
             break
+
+    sleep(1) # to wait all the messages of pubs/subs to be flushed
 
     print("[main] -----------------------------", flush=True)
     print("[main] Simulation completed", flush=True)
