@@ -10,7 +10,7 @@ class CONST(object):
     EXCHANGE_NAMES = ['logs1', 'logs2', 'logs3', 'logs4']
     TOPIC1         = ['saturn', 'earth', 'mars', '*', '#']
     TOPIC2         = ['red', 'blue', 'grey', '*', '#']
-    TOPIC3         = ['indie', 'rock', 'synthwave', '*']
+    TOPIC3         = ['indie', 'rock', 'soul', '*']
     KILL_PROBABILITY    = 0.00001
     CREATION_PROBABILIY = 0.000005
     MAX_DURATION        = 60
@@ -43,8 +43,8 @@ def delete_node(pid, type):
         subscriber_handler.kill_subscriber(candidate)
 
 # creates a topic
-# [topic excahnge with only the '#' binding, becomes a fanout exchange]
-# [topic excahnge without '#' and '*' bindings, becomes a direct exchange]
+# [a topic excahnge with only the '#' binding, becomes a fanout exchange]
+# [a topic excahnge without '#' and '*' bindings, becomes a direct exchange]
 def create_topic(type):
     topic = compose_topic()
     if type == 'subscriber':
