@@ -13,6 +13,8 @@ if __name__ == "__main__":
 
     number_of_publishers  = int(sys.argv[1])
     number_of_subscribers = int(sys.argv[2])
+    next_pub_id = number_of_publishers
+    next_sub_id = number_of_subscribers
 
     # list of the exchanges
     exchange_names = CONST.EXCHANGE_NAMES
@@ -46,15 +48,17 @@ if __name__ == "__main__":
 
         # randomly create a new publisher
         if random.uniform(0, 100) < CONST.CREATION_PROBABILIY:
-            create_node(exchange_names, number_of_publishers, 'publisher')
-            print(f"[main] Pub #{number_of_publishers} has joined", flush=True)
+            create_node(exchange_names, next_pub_id, 'publisher')
+            print(f"[main] Pub #{next_pub_id} has joined", flush=True)
+            next_pub_id += 1
             number_of_publishers += 1
 
         # randomly create a new subscriber      
         if random.uniform(0, 100) < CONST.CREATION_PROBABILIY:
-            create_node(exchange_names, number_of_subscribers, 'subscriber')
-            print(f"[main] Sub #{number_of_subscribers} has joined", flush=True)
+            create_node(exchange_names, next_sub_id, 'subscriber')
+            print(f"[main] Sub #{next_sub_id} has joined", flush=True)
             number_of_subscribers += 1
+            next_sub_id += 1
 
         # end the simulation after a certain time
         if time() - start_time >= CONST.MAX_DURATION:
