@@ -1,0 +1,4 @@
+# Directories
+__pycache__/
+rabbitmq/__pycache__/
+zeromq/__pycache__/
