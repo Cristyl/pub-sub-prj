@@ -18,7 +18,7 @@ class Broker():
         backend  = context.socket(zmq.PUB)
         backend.bind(f"tcp://*:{sys.argv[2]}")
         
-        print(f"[Broker] Broker is set up with port {sys.argv[2]} for pubs and port {sys.argv[1]} for subs", flush=True)
+        print(f"[Broker] Broker is set up with port {sys.argv[1]} for pubs and port {sys.argv[2]} for subs", flush=True)
 
         zmq.proxy(frontend, backend)
         

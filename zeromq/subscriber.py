@@ -1,6 +1,7 @@
 import zmq
 import sys
 import signal
+from utils import create_topic
 
 class Subscriber():
     def __init__(self):
@@ -15,7 +16,7 @@ class Subscriber():
         socket = context.socket(zmq.SUB)
         socket.connect(f"tcp://localhost:{port}")
 
-        binding_keys = sys.argv[3:]
+        binding_keys = create_topic('subscriber')
         if not binding_keys:
             sys.stderr.write("Usage: %s [binding_key]...\n" % sys.argv[0])
             sys.exit(1)
