@@ -3,8 +3,6 @@ import random
 from publisher_handler  import Publisherhandler
 from subscriber_handler import Subscriberhandler
 
-random.seed(42)
-
 class CONST(object):
 
     EXCHANGE_NAMES = ['logs1', 'logs2', 'logs3', 'logs4']
@@ -50,7 +48,10 @@ def create_topic(type):
     if type == 'subscriber':
         # creating more than one binding for that sub
         for _ in range(random.randint(0, 2)):
-            topic += ' ' + compose_topic()
+            next_topic = compose_topic()
+            if next_topic == '#':
+                return '#'
+            topic += ' ' + next_topic
     return topic
 
 def compose_topic():
@@ -62,9 +63,13 @@ def compose_topic():
     label = random.choice(CONST.TOPIC2)
     topic += ('.' + label)
     if label == '#':
+        if topic[0] == '*':
+            return '#'
         return topic
 
     label = random.choice(CONST.TOPIC3)
+    if label == '#' and topic[0] == '*' and topic [1] == '*':
+        return '#'
     topic += ('.' + label)
 
     return topic

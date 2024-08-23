@@ -4,15 +4,12 @@ from publisher_handler  import Publisherhandler
 from subscriber_handler  import Subscriberhandler
 from broker_handler import Brokerhandler
 
-random.seed(42)
 
 class CONST(object):
 
     PUBS_PORT = "5559"
     SUBS_PORT = "5560"
-    TOPIC1         = ['saturn', 'earth', 'mars', '*', '#']
-    TOPIC2         = ['red', 'blue', 'grey', '*', '#']
-    TOPIC3         = ['indie', 'rock', 'soul', '*']
+    TOPIC = ['saturn', 'earth', 'mars', 'red', 'blue', 'grey', 'indie', 'rock', 'soul']
     KILL_PROBABILITY    = 0.00001
     CREATION_PROBABILIY = 0.000005
     MAX_DURATION        = 60
@@ -30,7 +27,7 @@ broker_handler = Brokerhandler()
 # create a new publisher or a new subscriber
 def create_node(port, id, type):
     topic = create_topic(type)
-    command = ['python3', type + '.py', port, str(id), topic]
+    command = ['python3', type + '.py', port, str(id)]
     if (type == 'publisher'):
         publisher_handler.create_publisher(command)
     elif (type == 'subscriber'):
@@ -45,30 +42,15 @@ def delete_node(pid, type):
         subscriber_handler.kill_subscriber(candidate)
 
 # creates a topic
-# [a topic excahnge with only the '#' binding, becomes a fanout exchange]
-# [a topic excahnge without '#' and '*' bindings, becomes a direct exchange]
 def create_topic(type):
-    topic = compose_topic()
-    if type == 'subscriber':
-        # creating more than one binding for that sub
-        for _ in range(random.randint(0, 2)):
-            topic += ' ' + compose_topic()
-    return topic
-
-def compose_topic():
-    label = random.choice(CONST.TOPIC1)
-    topic = label
-    if label == '#':
-        return topic
-
-    label = random.choice(CONST.TOPIC2)
-    topic += ('.' + label)
-    if label == '#':
-        return topic
-
-    label = random.choice(CONST.TOPIC3)
-    topic += ('.' + label)
-
+    if type == 'publisher':
+        topic = random.choice(CONST.TOPIC)
+    elif type == 'subscriber':
+        topic = []
+        for _ in range(random.randint(1, 3)):
+            next_topic = random.choice(CONST.TOPIC)
+            if next_topic not in topic:
+                topic.append(next_topic)
     return topic
 
 def create_broker():
