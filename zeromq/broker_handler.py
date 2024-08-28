@@ -14,7 +14,6 @@ class Brokerhandler():
     def kill_broker(self):
         try:
             os.kill(self.pid, signal.SIGTERM)
-            self.pid = None
             # print(f"[brokerhandler] Sent SIGTERM signal to process {pid}", flush=True)
         except OSError:
             print(f"[brokerhandler] Failed to send SIGTERM signal to process {self.pid}", flush=True)

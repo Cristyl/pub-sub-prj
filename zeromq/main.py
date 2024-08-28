@@ -40,12 +40,16 @@ if __name__ == "__main__":
     while number_of_publishers or number_of_subscribers:
         # with a certain probability kill the sub and pub candidates (the right operator can be modified)
         if number_of_subscribers and (random.uniform(0, 100) < CONST.KILL_PROBABILITY):
-            number_of_subscribers -= 1
-            delete_node(random.choice(subscriber_handler.pids), 'subscriber')
+            candidate = random.choice(subscriber_handler.pids)
+            if candidate is not None:
+                number_of_subscribers -= 1
+                delete_node(candidate, 'subscriber')
 
         if number_of_publishers and (random.uniform(0, 100) < CONST.KILL_PROBABILITY):
-            number_of_publishers -= 1
-            delete_node(random.choice(publisher_handler.pids), 'publisher')
+            candidate = random.choice(publisher_handler.pids)
+            if candidate is not None:
+                number_of_publishers -= 1
+                delete_node(candidate, 'publisher')
 
         # randomly create a new publisher
         if random.uniform(0, 100) < CONST.CREATION_PROBABILIY:
@@ -67,12 +71,14 @@ if __name__ == "__main__":
             elapsed = 1
 
             for subscriber in subscriber_handler.pids:
-                delete_node(subscriber, 'subscriber')
-                number_of_subscribers -= 1
-            
+                if subscriber is not None:
+                    delete_node(subscriber, 'subscriber')
+                    number_of_subscribers -= 1
+
             for publisher in publisher_handler.pids:
-                delete_node(publisher, 'publisher')
-                number_of_publishers -= 1
+                if publisher is not None:
+                    delete_node(publisher, 'publisher')
+                    number_of_publishers -= 1
             
             delete_broker()
 

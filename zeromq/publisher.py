@@ -5,7 +5,7 @@ import signal
 import random
 from utils import create_topic
 
-random.seed(42)
+
 
 class Publisher():
     def __init__(self):
@@ -13,28 +13,30 @@ class Publisher():
         signal.signal(signal.SIGTERM, self.sigterm_handler)
 
         # prepare our context and publisher
-        port = sys.argv[1]
-        id_pub = sys.argv[2]
+        self.port = sys.argv[1]
+        self.id_pub = sys.argv[2]
+
+        random.seed(self.id_pub)
 
         context   = zmq.Context()
         socket = context.socket(zmq.PUB)
-        socket.connect(f"tcp://localhost:{port}")
-        print(f'[pub #{id_pub}] Connected to {port} port', flush=True)
+        socket.connect(f"tcp://localhost:{self.port}")
+        print(f'[pub #{self.id_pub}] Connected to {self.port} port', flush=True)
         
-        message = "Hello World! #" + id_pub
+        message = "Hello World! #" + self.id_pub
 
         while True:
             topic = create_topic('publisher')
             socket.send_string(f"{topic}:{message}")
-            print(f"[pub #{id_pub}] Sent {topic}:{message}", flush=True)
-            sleep(random.randint(1, 5))
+            print(f"[pub #{self.id_pub}] Sent {topic}:{message}", flush=True)
+            sleep(random.uniform(1, 5))
         
         # we never get here but clean up anyhow
         socket.close()
         context.term()
 
     def sigterm_handler(self, sig, frame):
-        print(f"[pub #{sys.argv[2]}] Crashed", flush=True)
+        print(f"[pub #{self.id_pub}] Crashed", flush=True)
         sys.exit(0)
 
 Publisher()

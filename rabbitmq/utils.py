@@ -51,7 +51,8 @@ def create_topic(type):
             next_topic = compose_topic()
             if next_topic == '#':
                 return '#'
-            topic += ' ' + next_topic
+            if topic != next_topic:
+                topic += ' ' + next_topic
     return topic
 
 def compose_topic():
@@ -68,7 +69,7 @@ def compose_topic():
         return topic
 
     label = random.choice(CONST.TOPIC3)
-    if label == '#' and topic[0] == '*' and topic [1] == '*':
+    if label == '#' and topic[0] == '*' and topic [1] == '*' or label == '*':
         return '#'
     topic += ('.' + label)
 
