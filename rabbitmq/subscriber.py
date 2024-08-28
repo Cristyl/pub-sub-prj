@@ -7,28 +7,32 @@ class Subscriber():
         # setup signal handler for SIGTERM
         signal.signal(signal.SIGTERM, self.sigterm_handler)
 
+        self.exchange = sys.argv[1]
+        self.id_sub = sys.argv[2]
+        self.binding_keys = sys.argv[3:]
+
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='localhost'))
         channel = connection.channel()
 
-        channel.exchange_declare(exchange=sys.argv[1], exchange_type='topic')
+        channel.exchange_declare(exchange=self.exchange, exchange_type='topic')
 
         result = channel.queue_declare(queue='', exclusive=True)
         queue_name = result.method.queue
 
-        binding_keys = sys.argv[3:]
-        if not binding_keys:
+        
+        if not self.binding_keys:
             sys.stderr.write("Usage: %s [binding_key]...\n" % sys.argv[0])
             sys.exit(1)
 
-        for binding_key in binding_keys:
+        for binding_key in self.binding_keys:
             channel.queue_bind(
-                exchange=sys.argv[1], queue=queue_name, routing_key=binding_key)
+                exchange=self.exchange, queue=queue_name, routing_key=binding_key)
 
-        print(f'[sub #{sys.argv[2]}] Connected to {sys.argv[1]} exchange and topics {binding_keys}. Waiting for logs', flush=True)
+        print(f'[sub #{self.id_sub}] Connected to {self.exchange} exchange and topics {self.binding_keys}. Waiting for logs', flush=True)
 
         def callback(ch, method, properties, body):
-            print(f"[sub #{sys.argv[2]}] Got {method.routing_key}:{body}", flush=True)
+            print(f"[sub #{self.id_sub}] Got {method.routing_key}:{body}", flush=True)
 
         channel.basic_consume(
             queue=queue_name, on_message_callback=callback, auto_ack=True)
@@ -36,7 +40,7 @@ class Subscriber():
         channel.start_consuming()
 
     def sigterm_handler(self, sig, frame):
-        print(f"[sub #{sys.argv[2]}] Crashed", flush=True)
+        print(f"[sub #{self.id_sub}] Crashed", flush=True)
         sys.exit(0)
 
 Subscriber()

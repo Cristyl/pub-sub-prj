@@ -13,7 +13,7 @@ class Publisherhandler():
     def kill_publisher(self, pid):
         try:
             os.kill(pid, signal.SIGTERM)
-            self.pids.remove(pid)
+            self.pids[self.pids.index(pid)] = None
             # print(f"[pubhandler] Sent SIGTERM signal to process {pid}", flush=True)
         except OSError:
             print(f"[pubhandler] Failed to send SIGTERM signal to process {pid}", flush=True)
