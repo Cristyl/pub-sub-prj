@@ -18,9 +18,10 @@ class Publisher():
 
         random.seed(self.id_pub)
 
-        context   = zmq.Context()
+        context = zmq.Context()
         socket = context.socket(zmq.PUB)
         socket.connect(f"tcp://localhost:{self.port}")
+        
         print(f'[pub #{self.id_pub}] Connected to {self.port} port', flush=True)
         
         message = "Hello World! #" + self.id_pub
@@ -29,7 +30,7 @@ class Publisher():
             topic = create_topic('publisher')
             socket.send_string(f"{topic}:{message}")
             print(f"[pub #{self.id_pub}] Sent {topic}:{message}", flush=True)
-            sleep(random.uniform(1, 5))
+            sleep(random.uniform(1, 5)) # to simulate the random message sending
         
         # we never get here but clean up anyhow
         socket.close()

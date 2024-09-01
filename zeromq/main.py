@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     # create the broker first of all
     create_broker()
-    sleep(1)
+    sleep(1) # to wait for the broker to be ready
 
     # create the subscribers
     for subscriber_id in range(number_of_subscribers):
@@ -82,11 +82,11 @@ if __name__ == "__main__":
             
             delete_broker()
 
+    sleep(1) # to wait for all the processes to finish their work
     if (elapsed):
-        sleep(1)
-        print("[main] The maximum execution time (60s) has expired")
-        print("[main] The simulation is about to terminate")
-        sleep(1)
+        print("[main] The maximum execution time (60s) has expired", flush=True)
+        print("[main] The simulation is about to terminate", flush=True)
+        sleep(1) # only for a GUI motivation
 
     print("[main] -----------------------------", flush=True)
     print("[main] Simulation completed", flush=True)

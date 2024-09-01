@@ -54,8 +54,8 @@ if __name__ == "__main__":
         if random.uniform(0, 100) < CONST.CREATION_PROBABILIY:
             create_node(exchange_names, next_pub_id, 'publisher')
             print(f"[main] Pub #{next_pub_id} has joined", flush=True)
-            next_pub_id += 1
             number_of_publishers += 1
+            next_pub_id += 1
 
         # randomly create a new subscriber      
         if random.uniform(0, 100) < CONST.CREATION_PROBABILIY:
@@ -79,11 +79,11 @@ if __name__ == "__main__":
                     delete_node(publisher, 'publisher')
                     number_of_publishers -= 1
 
+    sleep(1) # to wait for all the processes to finish their work
     if (elapsed):
-        sleep(1)
-        print("[main] The maximum execution time (60s) has expired")
-        print("[main] The simulation is about to terminate")
-        sleep(1)
+        print("[main] The maximum execution time (60s) has expired", flush=True)
+        print("[main] The simulation is about to terminate", flush=True)
+        sleep(1) # only for a GUI motivation
 
     print("[main] -----------------------------", flush=True)
     print("[main] Simulation completed", flush=True)
