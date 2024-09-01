@@ -1,6 +1,7 @@
 import pika
 import sys
 import signal
+from time import time
 
 class Subscriber():
     def __init__(self):
@@ -40,10 +41,14 @@ class Subscriber():
         connection.close()
 
     def callback(self, ch, method, properties, body):
-        print(f"[sub #{self.id_sub}] Got {method.routing_key}:{body}", flush=True)
+        arrival_time = int(time())
+        print(f"[sub #{self.id_sub}] Got in [{arrival_time}-{properties.timestamp}=] {arrival_time-properties.timestamp}s:{method.routing_key}:{body}", flush=True)
+        # the problem is that a pub send a message at least every 1 sec, so the sending of messages doesn't make full the queue, so the time between the sending and the receiving is the same.
 
     def sigterm_handler(self, sig, frame):
         print(f"[sub #{self.id_sub}] Crashed", flush=True)
+        # we should close the connection here
+        # we should close delete the queue here as well, but seems that (empirically) is closed from the killing action anyway
         sys.exit(0)
 
 Subscriber()
