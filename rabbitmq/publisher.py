@@ -1,6 +1,6 @@
 import pika
 import sys
-from time import sleep
+from time import sleep, time, ctime
 import signal
 import random
 from utils import create_topic
@@ -28,8 +28,11 @@ class Publisher():
         
         while True:
             topic = create_topic('publisher')
-            channel.basic_publish(exchange=self.exchange, routing_key=topic, body=message)        
-            print(f"[pub #{self.id_pub}] Sent {topic}:{message}", flush=True)
+            sending_time = int(time())
+            string_time = ctime(sending_time)
+            properties = pika.BasicProperties(timestamp=sending_time)
+            channel.basic_publish(exchange=self.exchange, routing_key=topic, body=message, properties=properties)        
+            print(f"[pub #{self.id_pub}] Sent [{string_time}]:{topic}:{message}", flush=True)
             sleep(random.uniform(1, 5)) # to simulate the random message sending
 
         # we never get here but close anyhow
@@ -37,6 +40,7 @@ class Publisher():
 
     def sigterm_handler(self, sig, frame):
         print(f"[pub #{self.id_pub}] Crashed", flush=True)
+        # we should close the connection here
         sys.exit(0)
 
 Publisher()
