@@ -7,6 +7,7 @@ class Subscriber():
         # setup signal handler for SIGTERM
         signal.signal(signal.SIGTERM, self.sigterm_handler)
 
+        # prepare our subscriber
         self.exchange = sys.argv[1]
         self.id_sub = sys.argv[2]
         self.binding_keys = sys.argv[3:]
@@ -20,7 +21,6 @@ class Subscriber():
         result = channel.queue_declare(queue='', exclusive=True)
         queue_name = result.method.queue
 
-        
         if not self.binding_keys:
             sys.stderr.write("Usage: %s [binding_key]...\n" % sys.argv[0])
             sys.exit(1)
@@ -31,13 +31,16 @@ class Subscriber():
 
         print(f'[sub #{self.id_sub}] Connected to {self.exchange} exchange and topics {self.binding_keys}. Waiting for logs', flush=True)
 
-        def callback(ch, method, properties, body):
-            print(f"[sub #{self.id_sub}] Got {method.routing_key}:{body}", flush=True)
-
         channel.basic_consume(
-            queue=queue_name, on_message_callback=callback, auto_ack=True)
+            queue=queue_name, on_message_callback=self.callback, auto_ack=True)
 
         channel.start_consuming()
+
+        # we never get here but close anyhow
+        connection.close()
+
+    def callback(self, ch, method, properties, body):
+        print(f"[sub #{self.id_sub}] Got {method.routing_key}:{body}", flush=True)
 
     def sigterm_handler(self, sig, frame):
         print(f"[sub #{self.id_sub}] Crashed", flush=True)

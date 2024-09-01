@@ -1,15 +1,14 @@
 import random
 
 from publisher_handler  import Publisherhandler
-from subscriber_handler  import Subscriberhandler
-from broker_handler import Brokerhandler
-
+from subscriber_handler import Subscriberhandler
+from broker_handler     import Brokerhandler
 
 class CONST(object):
 
     PUBS_PORT = "5559"
     SUBS_PORT = "5560"
-    TOPIC = ['saturn', 'earth', 'mars', 'red', 'blue', 'grey', 'indie', 'rock', 'soul']
+    TOPICS    = ['saturn', 'earth', 'mars', 'red', 'blue', 'grey', 'indie', 'rock', 'soul']
     KILL_PROBABILITY    = 0.00001
     CREATION_PROBABILIY = 0.000005
     MAX_DURATION        = 60
@@ -44,11 +43,11 @@ def delete_node(pid, type):
 # creates a topic
 def create_topic(type):
     if type == 'publisher':
-        topic = random.choice(CONST.TOPIC)
+        topic = random.choice(CONST.TOPICS)
     elif type == 'subscriber':
         topic = []
         for _ in range(random.randint(1, 3)):
-            next_topic = random.choice(CONST.TOPIC)
+            next_topic = random.choice(CONST.TOPICS)
             if next_topic not in topic:
                 topic.append(next_topic)
     return topic

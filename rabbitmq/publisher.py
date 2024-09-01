@@ -10,6 +10,7 @@ class Publisher():
         # setup signal handler for SIGTERM
         signal.signal(signal.SIGTERM, self.sigterm_handler)
 
+        # prepare our publisher
         self.exchange = sys.argv[1]
         self.id_pub = sys.argv[2]
 
@@ -21,17 +22,17 @@ class Publisher():
 
         channel.exchange_declare(exchange=self.exchange, exchange_type='topic')
 
-        # Question: Is it better the random crash in here or in the main?
         print(f'[pub #{self.id_pub}] Connected to {self.exchange} exchange', flush=True)
-        message = f"'Hello World! #{sys.argv[2]}'"
+
+        message = "Hello World! #" + self.id_pub
         
         while True:
             topic = create_topic('publisher')
             channel.basic_publish(exchange=self.exchange, routing_key=topic, body=message)        
-            print(f"[pub #{sys.argv[2]}] Sent {topic}:{message}", flush=True)
-            # messages_to_send -= 1
-            sleep(random.uniform(1, 5))
+            print(f"[pub #{self.id_pub}] Sent {topic}:{message}", flush=True)
+            sleep(random.uniform(1, 5)) # to simulate the random message sending
 
+        # we never get here but close anyhow
         connection.close()
 
     def sigterm_handler(self, sig, frame):

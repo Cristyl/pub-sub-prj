@@ -45,7 +45,7 @@ def delete_node(pid, type):
 # [a topic excahnge without '#' and '*' bindings, becomes a direct exchange]
 def create_topic(type):
     topic = compose_topic()
-    if type == 'subscriber':
+    if type == 'subscriber' and topic != '#':
         # creating more than one binding for that sub
         for _ in range(random.randint(0, 2)):
             next_topic = compose_topic()
