@@ -9,10 +9,12 @@ class Publisher():
     def __init__(self):
         # setup signal handler for SIGTERM
         signal.signal(signal.SIGTERM, self.sigterm_handler)
+        signal.signal(signal.SIGUSR1, self.sigusr1_handler)
 
         # prepare our publisher
         self.exchange = sys.argv[1]
         self.id_pub = sys.argv[2]
+        self.elapsed = 0
 
         random.seed(self.id_pub)
 
@@ -26,7 +28,7 @@ class Publisher():
 
         message = "Hello World! #" + self.id_pub
         
-        while True:
+        while not self.elapsed:
             topic = create_topic('publisher')
             sending_time = int(time())
             string_time = ctime(sending_time)
@@ -34,13 +36,18 @@ class Publisher():
             channel.basic_publish(exchange=self.exchange, routing_key=topic, body=message, properties=properties)        
             print(f"[pub #{self.id_pub}] Sent [{string_time}]:{topic}:{message}", flush=True)
             sleep(random.uniform(1, 5)) # to simulate the random message sending
-
-        # we never get here but close anyhow
+        
+        print(f"[pub #{self.id_pub}] Exited", flush=True)
         connection.close()
-
+                
     def sigterm_handler(self, sig, frame):
         print(f"[pub #{self.id_pub}] Crashed", flush=True)
         # we should close the connection here
         sys.exit(0)
+    
+    def sigusr1_handler(self, sig, frame):
+        self.elapsed = 1
+        
+        
 
 Publisher()
