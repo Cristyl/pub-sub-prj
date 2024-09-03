@@ -1,6 +1,6 @@
 import zmq
 import sys
-from time import sleep
+from time import sleep, time
 import signal
 import random
 from utils import create_topic
@@ -30,7 +30,8 @@ class Publisher():
 
         while not self.elapsed:
             topic = create_topic('publisher')
-            socket.send_string(f"{topic}:{message}")
+            sending_time = int(time() * 1000) # in ms
+            socket.send_string(f"{sending_time}:{topic}:{message}")
             print(f"[pub #{self.id_pub}] Sent {topic}:{message}", flush=True)
             sleep(random.uniform(1, 5)) # to simulate the random message sending
         
@@ -39,6 +40,7 @@ class Publisher():
 
     def sigterm_handler(self, sig, frame):
         print(f"[pub #{self.id_pub}] Crashed", flush=True)
+        # we should close the connection here
         sys.exit(0)
     
     def sigusr1_handler(self, sig, frame):
