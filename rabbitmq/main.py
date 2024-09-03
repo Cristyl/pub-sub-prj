@@ -3,6 +3,8 @@ import random
 from time import time, sleep
 from utils import *
 
+import matplotlib.pyplot as plt
+
 random.seed(42)
             
 if __name__ == "__main__":
@@ -81,10 +83,33 @@ if __name__ == "__main__":
 
     sleep(1) # to wait for all the processes to finish their work
     if (elapsed):
-        print("[main] The maximum execution time (60s) has expired", flush=True)
+        print("[main] The maximum execution time (" + str(CONST.MAX_DURATION) + "s) has expired", flush=True)
         print("[main] The simulation is about to terminate", flush=True)
         sleep(1) # only for a GUI motivation
 
     print("[main] -----------------------------", flush=True)
     print("[main] Simulation completed", flush=True)
     print("[main] -----------------------------\n", flush=True)
+
+    sleep(2) # only for a GUI motivation
+    print("Performing the distribution...", flush=True)
+    f = open("data.txt", "r")
+    
+    lines = f.readlines()
+    f.close()
+    
+    data = []
+    for line in lines:
+        data.append(int(line.strip()))
+    
+    # data to plot
+    data.sort()
+    data = data[:-1]
+    print(data)
+
+    # create histogram
+    plt.hist(data)
+    
+    # display histogram
+    plt.show()
+    

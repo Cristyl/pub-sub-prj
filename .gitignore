@@ -2,3 +2,7 @@
 __pycache__/
 rabbitmq/__pycache__/
 zeromq/__pycache__/
+
+#datafiles
+rabbitmq/data.txt
+zeromq/data.txt
