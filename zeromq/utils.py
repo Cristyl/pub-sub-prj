@@ -35,10 +35,17 @@ def create_node(port, id, type):
 # delete a publisher or a subscriber
 def delete_node(pid, type):
     candidate = pid
+    decision = random.uniform(1, 100) > 50
     if (type == 'publisher'):
-        publisher_handler.kill_publisher(candidate)
+        if decision:
+            publisher_handler.kill_publisher(candidate)
+        else:
+            publisher_handler.close_publisher(candidate)
     elif (type == 'subscriber'):
-        subscriber_handler.kill_subscriber(candidate)
+        if decision:
+            subscriber_handler.kill_subscriber(candidate)
+        else:
+            subscriber_handler.close_subscriber(candidate)
 
 # creates a topic
 def create_topic(type):

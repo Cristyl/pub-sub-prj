@@ -7,11 +7,13 @@ class Subscriber():
     def __init__(self):
         # setup signal handler for SIGTERM
         signal.signal(signal.SIGTERM, self.sigterm_handler)
+        signal.signal(signal.SIGUSR1, self.sigusr1_handler)
     
         # prepare our context and subscriber
         self.port = sys.argv[1]
         self.id_sub = sys.argv[2]
         self.binding_keys = create_topic('subscriber')
+        self.elapsed = 0
 
         context = zmq.Context()
         socket = context.socket(zmq.SUB)
@@ -26,16 +28,20 @@ class Subscriber():
 
         print(f'[sub #{self.id_sub}] Connected to {self.port} port and topics {self.binding_keys}. Waiting for logs', flush=True)
         
-        while True:
+        while not self.elapsed:
             message = socket.recv()
             print(f"[sub #{self.id_sub}] Got {message}", flush=True)
- 
-        # we never get here but clean up anyhow
         socket.close()
         context.term()
+        
 
     def sigterm_handler(self, sig, frame):
         print(f"[sub #{self.id_sub}] Crashed", flush=True)
         sys.exit(0)
+    
+    def sigusr1_handler(self, sig, frame):
+        self.elapsed = 1
+        print(f"[sub #{self.id_sub}] Exited", flush=True)
+
 
 Subscriber()
