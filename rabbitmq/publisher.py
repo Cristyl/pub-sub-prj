@@ -37,7 +37,6 @@ class Publisher():
             print(f"[pub #{self.id_pub}] Sent [{string_time}]:{topic}:{message}", flush=True)
             sleep(random.uniform(1, 5)) # to simulate the random message sending
         
-        print(f"[pub #{self.id_pub}] Exited", flush=True)
         connection.close()
                 
     def sigterm_handler(self, sig, frame):
@@ -47,6 +46,7 @@ class Publisher():
     
     def sigusr1_handler(self, sig, frame):
         self.elapsed = 1
+        print(f"[pub #{self.id_pub}] Exited", flush=True)
         
         
 
