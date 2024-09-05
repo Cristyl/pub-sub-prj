@@ -13,7 +13,6 @@ class Subscriber():
         self.exchange = sys.argv[1]
         self.id_sub = sys.argv[2]
         self.binding_keys = sys.argv[3:]
-        self.old_arrival_time = 0
 
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='localhost'))
@@ -37,31 +36,23 @@ class Subscriber():
         self.channel.basic_consume(
             queue=queue_name, on_message_callback=self.callback, auto_ack=True)
 
-        self.file = open("data.txt", "w")
         self.channel.start_consuming()
 
     def callback(self, ch, method, properties, body):
         arrival_time = int(time() * 1000) # in ms
         latency = arrival_time - properties.timestamp
-
         print(f"[sub #{self.id_sub}] Got in {latency}ms :{method.routing_key}:{body}", flush=True)
-        
-        inter_arrival_time = arrival_time - self.old_arrival_time
-        self.file.write(str(inter_arrival_time)+"\n")
-        self.old_arrival_time = arrival_time
 
     def sigterm_handler(self, sig, frame):
         print(f"[sub #{self.id_sub}] Crashed", flush=True)
         # we should close the connection here
         # we should close the queue here as well, but seems that (empirically) is closed from the killing action anyway
-        self.file.close()
         sys.exit(0)
 
     def sigusr1_handler(self, sig, frame):
         self.channel.stop_consuming()
         self.connection.close()
         print(f"[sub #{self.id_sub}] Exited", flush=True)
-        self.file.close()
         sys.exit(0)
 
 Subscriber()
