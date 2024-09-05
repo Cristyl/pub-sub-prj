@@ -12,6 +12,8 @@ class CONST(object):
     KILL_PROBABILITY    = 0.00001
     CREATION_PROBABILIY = 0.000005
     MAX_DURATION        = 60
+    MAX_SUB             = 7
+    MAX_PUB             = 7
 
     def __setattr__(self, *_):
         pass
@@ -25,7 +27,6 @@ broker_handler = Brokerhandler()
 
 # create a new publisher or a new subscriber
 def create_node(port, id, type):
-    topic = create_topic(type)
     command = ['python3', type + '.py', port, str(id)]
     if (type == 'publisher'):
         publisher_handler.create_publisher(command)
@@ -57,7 +58,7 @@ def create_topic(type):
             next_topic = random.choice(CONST.TOPICS)
             if next_topic not in topic:
                 topic.append(next_topic)
-    return topic
+    return 'topic'
 
 def create_broker():
     command = ['python3', 'broker' + '.py', CONST.PUBS_PORT, CONST.SUBS_PORT]

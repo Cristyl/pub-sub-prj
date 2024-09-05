@@ -5,13 +5,15 @@ from subscriber_handler import Subscriberhandler
 
 class CONST(object):
 
-    EXCHANGE_NAMES = ['logs1', 'logs2', 'logs3', 'logs4']
+    EXCHANGE_NAMES = ['logs']
     TOPIC1         = ['saturn', 'earth', 'mars', '*', '#']
     TOPIC2         = ['red', 'blue', 'grey', '*', '#']
     TOPIC3         = ['indie', 'rock', 'soul', '*']
     KILL_PROBABILITY    = 0.00001
     CREATION_PROBABILIY = 0.000005
     MAX_DURATION        = 60
+    MAX_SUB             = 7
+    MAX_PUB             = 7
 
     def __setattr__(self, *_):
         pass

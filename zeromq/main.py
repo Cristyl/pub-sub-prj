@@ -2,15 +2,15 @@ import sys
 import random
 from time import time, sleep
 from utils import *
-
+import os
 import matplotlib.pyplot as plt
 
 random.seed(42)
             
 if __name__ == "__main__":
     # define the number of publishers and subscribers (it can modify the upper and lower bounds)
-    if len(sys.argv) != 3 or sys.argv[1].isdigit() == False or sys.argv[2].isdigit() == False:
-        print("[main] Usage: python3 main.py <num_of_pub> <num_of_sub>", flush=True)
+    if len(sys.argv) != 3 or sys.argv[1].isdigit() == False or sys.argv[2].isdigit() == False or int(sys.argv[1]) > CONST.MAX_PUB and int(sys.argv[2]) > sys.argv[2]:
+        print(f"[main] Usage: python3 main.py <num_of_pub> <num_of_sub> (the values of the parameters must be at max respectively {CONST.MAX_PUB}, {CONST.MAX_SUB})", flush=True)
         sys.exit(1)
 
     number_of_publishers  = int(sys.argv[1])
@@ -29,12 +29,12 @@ if __name__ == "__main__":
 
     # create the subscribers
     for subscriber_id in range(number_of_subscribers):
-        create_node(CONST.SUBS_PORT, subscriber_id, 'subscriber')
+        create_node(CONST.PUBS_PORT, subscriber_id, 'subscriber')
 
     # create the publishers
     # [we create first the subscribers to not risk to loose any message]
     for publisher_id in range(number_of_publishers):
-        create_node(CONST.PUBS_PORT, publisher_id, 'publisher')
+        create_node(CONST.SUBS_PORT, publisher_id, 'publisher')
 
     elapsed = 0
 
@@ -54,15 +54,15 @@ if __name__ == "__main__":
                 delete_node(candidate, 'publisher')
 
         # randomly create a new publisher
-        if random.uniform(0, 100) < CONST.CREATION_PROBABILIY:
-            create_node(CONST.PUBS_PORT, next_pub_id, 'publisher')
+        if random.uniform(0, 100) < CONST.CREATION_PROBABILIY and number_of_publishers <= CONST.MAX_PUB:
+            create_node(CONST.SUBS_PORT, next_pub_id, 'publisher')
             print(f"[main] Pub #{next_pub_id} has joined", flush=True)
             number_of_publishers += 1
             next_pub_id += 1
 
         # randomly create a new subscriber      
-        if random.uniform(0, 100) < CONST.CREATION_PROBABILIY:
-            create_node(CONST.SUBS_PORT, next_sub_id, 'subscriber')
+        if random.uniform(0, 100) < CONST.CREATION_PROBABILIY and number_of_subscribers <= CONST.MAX_SUB:
+            create_node(CONST.PUBS_PORT, next_sub_id, 'subscriber')
             print(f"[main] Sub #{next_sub_id} has joined", flush=True)
             number_of_subscribers += 1
             next_sub_id += 1
@@ -96,18 +96,20 @@ if __name__ == "__main__":
 
     sleep(2) # only for a GUI motivation
     print("Performing the distribution...", flush=True)
-    f = open("data.txt", "r")
-    
-    lines = f.readlines()
-    f.close()
-    
+
     data = []
-    for line in lines:
-        data.append(int(line.strip()))
+    for i in range(next_pub_id):
+        f = open(f"data{i}.txt", "r")
+        lines = f.readlines()
+        for line in lines:
+            data.append(int(line.strip()))
+        f.close()
+        if os.path.exists(f'data{i}.txt'):
+            os.remove(f'data{i}.txt')
     
     # data to plot
     data.sort()
-    data = data[:-1]
+    data = data[:-next_pub_id]
     print(data)
 
     # create histogram
