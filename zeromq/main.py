@@ -29,12 +29,12 @@ if __name__ == "__main__":
 
     # create the subscribers
     for subscriber_id in range(number_of_subscribers):
-        create_node(CONST.PUBS_PORT, subscriber_id, 'subscriber')
+        create_node(CONST.SUBS_PORT, subscriber_id, 'subscriber')
 
     # create the publishers
     # [we create first the subscribers to not risk to loose any message]
     for publisher_id in range(number_of_publishers):
-        create_node(CONST.SUBS_PORT, publisher_id, 'publisher')
+        create_node(CONST.PUBS_PORT, publisher_id, 'publisher')
 
     elapsed = 0
 
@@ -55,14 +55,14 @@ if __name__ == "__main__":
 
         # randomly create a new publisher
         if random.uniform(0, 100) < CONST.CREATION_PROBABILIY and number_of_publishers <= CONST.MAX_PUB:
-            create_node(CONST.SUBS_PORT, next_pub_id, 'publisher')
+            create_node(CONST.PUBS_PORT, next_pub_id, 'publisher')
             print(f"[main] Pub #{next_pub_id} has joined", flush=True)
             number_of_publishers += 1
             next_pub_id += 1
 
         # randomly create a new subscriber      
         if random.uniform(0, 100) < CONST.CREATION_PROBABILIY and number_of_subscribers <= CONST.MAX_SUB:
-            create_node(CONST.PUBS_PORT, next_sub_id, 'subscriber')
+            create_node(CONST.SUBS_PORT, next_sub_id, 'subscriber')
             print(f"[main] Sub #{next_sub_id} has joined", flush=True)
             number_of_subscribers += 1
             next_sub_id += 1
@@ -97,23 +97,51 @@ if __name__ == "__main__":
     sleep(2) # only for a GUI motivation
     print("Performing the distribution...", flush=True)
 
-    data = []
+    correlation_times = []
     for i in range(next_pub_id):
-        f = open(f"data{i}.txt", "r")
+        f = open(f"corr_t{i}.txt", "r")
         lines = f.readlines()
         for line in lines:
-            data.append(int(line.strip()))
+            correlation_times.append(int(line.strip()))
         f.close()
-        if os.path.exists(f'data{i}.txt'):
-            os.remove(f'data{i}.txt')
+        if os.path.exists(f'corr_t{i}.txt'):
+            os.remove(f'corr_t{i}.txt')
     
     # data to plot
-    data.sort()
-    data = data[:-next_pub_id]
-    print(data)
+    correlation_times.sort()
+    correlation_times = correlation_times[:-next_pub_id]
+    print("Correlation_time: ", correlation_times)
 
-    # create histogram
-    plt.hist(data)
+    number_of_arrivals = []
+    for i in range(next_pub_id):
+        f = open(f"counter{i}.txt", "r")
+        line = f.readline()
+        number_of_arrivals.append(int(line))
+        f.close()
+        if os.path.exists(f'counter{i}.txt'):
+            os.remove(f'counter{i}.txt')
     
+    latencies = []
+    for i in range(next_sub_id):
+        f = open(f"latencies{i}.txt", "r")
+        lines = f.readlines()
+        for line in lines:
+            latencies.append(int(line.strip()))
+        f.close()
+        if os.path.exists(f'latencies{i}.txt'):
+            os.remove(f'latencies{i}.txt')
+
+    # data to plot
+    latencies.sort()
+    print("Latencies: ", latencies)
+    
+    # create histogram
+    plt.hist(correlation_times)
+    plt.hist(number_of_arrivals)
+    plt.hist(latencies)
+    print("Avg latencies: ", sum(latencies) / len(latencies))
+    print("Number of completions: ", len(latencies))
+    print("Number of arrivals: ", number_of_arrivals)
+    print("Avg arrivals: ", sum(number_of_arrivals) / next_pub_id - 1)
     # display histogram
     plt.show()

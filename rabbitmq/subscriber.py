@@ -32,6 +32,7 @@ class Subscriber():
                 exchange=self.exchange, queue=queue_name, routing_key=binding_key)
 
         print(f'[sub #{self.id_sub}] Connected to {self.exchange} exchange and topics {self.binding_keys}. Waiting for logs', flush=True)
+        self.file = open(f'latencies{self.id_sub}.txt', 'w')
 
         self.channel.basic_consume(
             queue=queue_name, on_message_callback=self.callback, auto_ack=True)
@@ -41,17 +42,20 @@ class Subscriber():
     def callback(self, ch, method, properties, body):
         arrival_time = int(time() * 1000) # in ms
         latency = arrival_time - properties.timestamp
+        self.file.write(str(latency) + '\n')
         print(f"[sub #{self.id_sub}] Got in {latency}ms :{method.routing_key}:{body}", flush=True)
 
     def sigterm_handler(self, sig, frame):
         print(f"[sub #{self.id_sub}] Crashed", flush=True)
         # we should close the connection here
         # we should close the queue here as well, but seems that (empirically) is closed from the killing action anyway
+        self.file.close()
         sys.exit(0)
 
     def sigusr1_handler(self, sig, frame):
         self.channel.stop_consuming()
         self.connection.close()
+        self.file.close()
         print(f"[sub #{self.id_sub}] Exited", flush=True)
         sys.exit(0)
 

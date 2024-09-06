@@ -94,24 +94,51 @@ if __name__ == "__main__":
     sleep(2) # only for a GUI motivation
     print("Performing the distribution...", flush=True)
 
-    data = []
+    correlation_times = []
     for i in range(next_pub_id):
-        f = open(f"data{i}.txt", "r")
+        f = open(f"corr_t{i}.txt", "r")
         lines = f.readlines()
         for line in lines:
-            data.append(int(line.strip()))
+            correlation_times.append(int(line.strip()))
         f.close()
-        if os.path.exists(f'data{i}.txt'):
-            os.remove(f'data{i}.txt')
+        if os.path.exists(f'corr_t{i}.txt'):
+            os.remove(f'corr_t{i}.txt')
     
     # data to plot
-    data.sort()
-    data = data[:-next_pub_id]
-    print(data)
+    correlation_times.sort()
+    correlation_times = correlation_times[:-next_pub_id]
+    print("Correlation_time: ", correlation_times)
 
-    # create histogram
-    plt.hist(data)
+    number_of_arrivals = []
+    for i in range(next_pub_id):
+        f = open(f"counter{i}.txt", "r")
+        line = f.readline()
+        number_of_arrivals.append(int(line))
+        f.close()
+        if os.path.exists(f'counter{i}.txt'):
+            os.remove(f'counter{i}.txt')
     
+    latencies = []
+    for i in range(next_sub_id):
+        f = open(f"latencies{i}.txt", "r")
+        lines = f.readlines()
+        for line in lines:
+            latencies.append(int(line.strip()))
+        f.close()
+        if os.path.exists(f'latencies{i}.txt'):
+            os.remove(f'latencies{i}.txt')
+
+    # data to plot
+    latencies.sort()
+    print("Latencies: ", latencies)
+    
+    # create histogram
+    plt.hist(correlation_times)
+    plt.hist(number_of_arrivals)
+    plt.hist(latencies)
+    print("Avg latencies: ", sum(latencies) / len(latencies))
+    print("Number of completions: ", len(latencies))
+    print("Number of arrivals: ", number_of_arrivals)
+    print("Avg arrivals: ", sum(number_of_arrivals) / next_pub_id - 1)
     # display histogram
     plt.show()
-    

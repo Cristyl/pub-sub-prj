@@ -58,7 +58,7 @@ def create_topic(type):
             next_topic = random.choice(CONST.TOPICS)
             if next_topic not in topic:
                 topic.append(next_topic)
-    return 'topic'
+    return topic
 
 def create_broker():
     command = ['python3', 'broker' + '.py', CONST.PUBS_PORT, CONST.SUBS_PORT]
