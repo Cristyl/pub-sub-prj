@@ -16,6 +16,7 @@ class Publisher():
         self.id_pub = sys.argv[2]
         self.elapsed = 0
         self.previous_sent = 0
+        self.counter = 0
 
         random.seed(int(self.id_pub))
 
@@ -28,7 +29,7 @@ class Publisher():
         print(f'[pub #{self.id_pub}] Connected to {self.exchange} exchange', flush=True)
 
         message = "Hello World! #" + self.id_pub
-        self.file = open(f'data{self.id_pub}.txt', 'w')
+        self.file = open(f'corr_t{self.id_pub}.txt', 'w')
         
         while not self.elapsed:
             topic = create_topic('publisher')
@@ -36,7 +37,8 @@ class Publisher():
             self.file.write(str(sending_time - self.previous_sent) + '\n')
             self.previous_sent = sending_time
             properties = pika.BasicProperties(timestamp=sending_time)
-            channel.basic_publish(exchange=self.exchange, routing_key=topic, body=message, properties=properties)        
+            channel.basic_publish(exchange=self.exchange, routing_key=topic, body=message, properties=properties)
+            self.counter += 1       
             print(f"[pub #{self.id_pub}] Sent {topic}:{message}", flush=True) # [{string_time}]
             sleep(random.exponential(scale=3.0, size=None)/100) # to simulate the random message sending
 
@@ -47,11 +49,15 @@ class Publisher():
         print(f"[pub #{self.id_pub}] Crashed", flush=True)
         # we should close the connection here
         self.file.close()
+        with open(f'counter{self.id_pub}.txt', 'w') as f:
+            f.write(str(self.counter))
         sys.exit(0)
 
     def sigusr1_handler(self, sig, frame):
         self.elapsed = 1
         print(f"[pub #{self.id_pub}] Exited", flush=True)
         self.file.close()
+        with open(f'counter{self.id_pub}.txt', 'w') as f:
+            f.write(str(self.counter))
 
 Publisher()
