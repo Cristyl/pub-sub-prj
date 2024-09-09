@@ -2,6 +2,7 @@ import pika
 import sys
 import signal
 from time import time
+from utils import CONST, create_topic
 
 class Subscriber():
     def __init__(self):
@@ -10,16 +11,14 @@ class Subscriber():
         signal.signal(signal.SIGUSR1, self.sigusr1_handler)
 
         # prepare our subscriber
-        self.exchange = sys.argv[1]
-        self.id_sub = sys.argv[2]
-        self.binding_keys = sys.argv[3:]
+        self.exchange = CONST.EXCHANGE_NAME
+        self.id_sub = sys.argv[1]
+        self.binding_keys = create_topic('subscriber')
 
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='localhost'))
         self.channel = self.connection.channel()
-
         self.channel.exchange_declare(exchange=self.exchange, exchange_type='topic')
-
         result = self.channel.queue_declare(queue='', exclusive=True)
         queue_name = result.method.queue
 
@@ -32,6 +31,7 @@ class Subscriber():
                 exchange=self.exchange, queue=queue_name, routing_key=binding_key)
 
         print(f'[sub #{self.id_sub}] Connected to {self.exchange} exchange and topics {self.binding_keys}. Waiting for logs', flush=True)
+        
         self.file = open(f'latencies{self.id_sub}.txt', 'w')
 
         self.channel.basic_consume(
@@ -47,8 +47,6 @@ class Subscriber():
 
     def sigterm_handler(self, sig, frame):
         print(f"[sub #{self.id_sub}] Crashed", flush=True)
-        # we should close the connection here
-        # we should close the queue here as well, but seems that (empirically) is closed from the killing action anyway
         self.file.close()
         sys.exit(0)
 
