@@ -18,8 +18,9 @@ class Publisher():
         self.id_pub = sys.argv[2]
         self.elapsed = 0
         self.previous_sent = 0
-        random.seed(int(self.id_pub))
         self.counter = 0
+
+        random.seed(int(self.id_pub))
 
         context = zmq.Context()
         socket = context.socket(zmq.PUB)
@@ -28,7 +29,8 @@ class Publisher():
         print(f'[pub #{self.id_pub}] Connected to {self.port} port', flush=True)
         
         message = "Hello World! #" + self.id_pub
-        self.file = open(f'corr_t{self.id_pub}.txt', 'w')
+        
+        self.file = open(f'inter{self.id_pub}.txt', 'w')
 
         while not self.elapsed:
             topic = create_topic('publisher')
@@ -47,7 +49,6 @@ class Publisher():
         self.file.close()
         with open(f'counter{self.id_pub}.txt', 'w') as f:
             f.write(str(self.counter))
-        # we should close the connection here
         sys.exit(0)
     
     def sigusr1_handler(self, sig, frame):

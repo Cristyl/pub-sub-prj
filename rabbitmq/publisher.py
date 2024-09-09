@@ -3,7 +3,7 @@ import sys
 from time import sleep, time
 import signal
 from numpy import random
-from utils import create_topic
+from utils import create_topic, CONST
 
 class Publisher():
     def __init__(self):
@@ -12,8 +12,8 @@ class Publisher():
         signal.signal(signal.SIGUSR1, self.sigusr1_handler)
 
         # prepare our publisher
-        self.exchange = sys.argv[1]
-        self.id_pub = sys.argv[2]
+        self.id_pub = sys.argv[1]
+        self.exchange = CONST.EXCHANGE_NAME
         self.elapsed = 0
         self.previous_sent = 0
         self.counter = 0
@@ -29,7 +29,8 @@ class Publisher():
         print(f'[pub #{self.id_pub}] Connected to {self.exchange} exchange', flush=True)
 
         message = "Hello World! #" + self.id_pub
-        self.file = open(f'corr_t{self.id_pub}.txt', 'w')
+        
+        self.file = open(f'inter{self.id_pub}.txt', 'w')
         
         while not self.elapsed:
             topic = create_topic('publisher')
@@ -47,7 +48,6 @@ class Publisher():
 
     def sigterm_handler(self, sig, frame):
         print(f"[pub #{self.id_pub}] Crashed", flush=True)
-        # we should close the connection here
         self.file.close()
         with open(f'counter{self.id_pub}.txt', 'w') as f:
             f.write(str(self.counter))

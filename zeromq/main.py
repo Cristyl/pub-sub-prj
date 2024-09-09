@@ -2,9 +2,10 @@ import sys
 import random
 from time import time, sleep
 from utils import *
-import os
 import matplotlib.pyplot as plt
+import os
 
+#seed the random number generator for reproducibility
 random.seed(42)
             
 if __name__ == "__main__":
@@ -97,21 +98,22 @@ if __name__ == "__main__":
     sleep(2) # only for a GUI motivation
     print("Performing the distribution...", flush=True)
 
-    correlation_times = []
+    #collect correlations times
+    inter_arrival_times = []
     for i in range(next_pub_id):
-        f = open(f"corr_t{i}.txt", "r")
+        f = open(f"inter{i}.txt", "r")
         lines = f.readlines()
         for line in lines:
-            correlation_times.append(int(line.strip()))
+            inter_arrival_times.append(int(line.strip()))
         f.close()
-        if os.path.exists(f'corr_t{i}.txt'):
-            os.remove(f'corr_t{i}.txt')
+        if os.path.exists(f'inter{i}.txt'):
+            os.remove(f'inter{i}.txt')
     
-    # data to plot
-    correlation_times.sort()
-    correlation_times = correlation_times[:-next_pub_id]
-    print("Correlation_time: ", correlation_times)
+    inter_arrival_times.sort()
+    inter_arrival_times = inter_arrival_times[:-next_pub_id]
+    print("Correlation_time: ", inter_arrival_times)
 
+    #collect number of arrivals
     number_of_arrivals = []
     for i in range(next_pub_id):
         f = open(f"counter{i}.txt", "r")
@@ -121,6 +123,7 @@ if __name__ == "__main__":
         if os.path.exists(f'counter{i}.txt'):
             os.remove(f'counter{i}.txt')
     
+    #collect latencies
     latencies = []
     for i in range(next_sub_id):
         f = open(f"latencies{i}.txt", "r")
@@ -131,17 +134,17 @@ if __name__ == "__main__":
         if os.path.exists(f'latencies{i}.txt'):
             os.remove(f'latencies{i}.txt')
 
-    # data to plot
     latencies.sort()
     print("Latencies: ", latencies)
     
-    # create histogram
-    plt.hist(correlation_times)
+    # create histogram over all the collected data and print other information
+    plt.hist(inter_arrival_times)
     plt.hist(number_of_arrivals)
     plt.hist(latencies)
     print("Avg latencies: ", sum(latencies) / len(latencies))
     print("Number of completions: ", len(latencies))
     print("Number of arrivals: ", number_of_arrivals)
     print("Avg arrivals: ", sum(number_of_arrivals) / next_pub_id - 1)
+    
     # display histogram
     plt.show()

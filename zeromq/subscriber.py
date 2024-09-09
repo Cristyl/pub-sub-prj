@@ -1,8 +1,8 @@
 import zmq
 import sys
 import signal
-from utils import create_topic
 from time import time
+from utils import create_topic
 
 class Subscriber():
     def __init__(self):
@@ -42,7 +42,6 @@ class Subscriber():
     def sigterm_handler(self, sig, frame):
         print(f"[sub #{self.id_sub}] Crashed", flush=True)
         self.file.close()
-        # we should close the socket and the context here
         sys.exit(0)
 
     def sigusr1_handler(self, sig, frame):

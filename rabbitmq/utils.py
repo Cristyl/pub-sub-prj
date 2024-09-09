@@ -1,14 +1,13 @@
 import random
-
 from publisher_handler  import Publisherhandler
 from subscriber_handler import Subscriberhandler
 
 class CONST(object):
 
-    EXCHANGE_NAMES = ['logs']
+    EXCHANGE_NAME = 'logs'
     TOPIC1         = ['saturn', 'earth', 'mars', '*', '#']
     TOPIC2         = ['red', 'blue', 'grey', '*', '#']
-    TOPIC3         = ['indie', 'rock', 'soul', '*']
+    TOPIC3         = ['indie', 'rock', 'soul', '*', '#']
     KILL_PROBABILITY    = 0.00001
     CREATION_PROBABILIY = 0.000005
     MAX_DURATION        = 60
@@ -25,10 +24,9 @@ publisher_handler  = Publisherhandler()
 subscriber_handler = Subscriberhandler()
 
 # create a new publisher or a new subscriber
-def create_node(exchanges, id, type):
+def create_node(id, type):
     topic = create_topic(type)
-    exchange_name = random.choice(exchanges)
-    command = ['python3', type + '.py', exchange_name, str(id), topic]
+    command = ['python3', type + '.py', str(id)]
     if (type == 'publisher'):
         publisher_handler.create_publisher(command)
     elif (type == 'subscriber'):
@@ -50,8 +48,8 @@ def delete_node(pid, type):
             subscriber_handler.close_subscriber(candidate)
 
 # creates a topic
-# [a topic excahnge with only the '#' binding, becomes a fanout exchange]
-# [a topic excahnge without '#' and '*' bindings, becomes a direct exchange]
+# [a topic exchange with only the '#' binding, becomes a fanout exchange]
+# [a topic exchange without '#' and '*' bindings, becomes a direct exchange]
 def create_topic(type):
     topic = compose_topic()
     if type == 'subscriber' and topic != '#':

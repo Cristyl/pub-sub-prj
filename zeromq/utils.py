@@ -1,5 +1,4 @@
 import random
-
 from publisher_handler  import Publisherhandler
 from subscriber_handler import Subscriberhandler
 from broker_handler     import Brokerhandler
@@ -8,7 +7,7 @@ class CONST(object):
 
     PUBS_PORT = "5559"
     SUBS_PORT = "5560"
-    TOPICS    = ['saturn', 'earth', 'mars', 'red', 'blue', 'grey', 'indie', 'rock', 'soul']
+    TOPICS    = ['saturn', 'earth', 'mars', 'red']
     KILL_PROBABILITY    = 0.00001
     CREATION_PROBABILIY = 0.000005
     MAX_DURATION        = 60
