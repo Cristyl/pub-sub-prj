@@ -4,6 +4,7 @@ from time import time, sleep
 from utils import *
 import matplotlib.pyplot as plt
 import os
+import subprocess
 
 #seed the random number generator for reproducibility
 random.seed(42)
@@ -32,8 +33,10 @@ if __name__ == "__main__":
     # [we create first the subscribers to not risk to loose any message]
     for publisher_id in range(number_of_publishers):
         create_node(publisher_id, 'publisher')
-
+    
+    # variables for loop ending
     elapsed = 0
+    flag = False
 
     # stay into the while loop till there is a pub or a sub
     while number_of_publishers or number_of_subscribers:
@@ -64,6 +67,16 @@ if __name__ == "__main__":
             number_of_subscribers += 1
             next_sub_id += 1
 
+        # condition checker for rabbitmq node closure
+        # used mostly to see how the system reacts if one or more nodes are closed
+        # the timing, the name and the number of closed nodes can be modified
+        '''
+        if time() - start_time >= 15 and not flag:
+            subprocess.Popen(["sudo", "rabbitmqctl", "-n", "rabbit1", "stop_app"])
+            print("I closed rabbit1", flush=True)
+            flag = True
+        '''
+
         # end the simulation after a certain time
         if time() - start_time >= CONST.MAX_DURATION:
 
@@ -71,12 +84,12 @@ if __name__ == "__main__":
 
             for subscriber in subscriber_handler.pids:
                 if subscriber is not None:
-                    delete_node(subscriber, 'subscriber')
+                    delete_node(subscriber, 'subscriber', termination=True)
                     number_of_subscribers -= 1
 
             for publisher in publisher_handler.pids:
                 if publisher is not None:
-                    delete_node(publisher, 'publisher')
+                    delete_node(publisher, 'publisher', termination=True)
                     number_of_publishers -= 1
 
     sleep(1) # to wait for all the processes to finish their work
@@ -105,7 +118,7 @@ if __name__ == "__main__":
     
     inter_arrival_times.sort()
     inter_arrival_times = inter_arrival_times[:-next_pub_id]
-    print("Inter arrival times: ", inter_arrival_times)
+    print("Inter arrival times: ", inter_arrival_times, flush=True)
 
     #collect number of arrivals
     number_of_arrivals = []
@@ -129,16 +142,26 @@ if __name__ == "__main__":
             os.remove(f'latencies{i}.txt')
 
     latencies.sort()
-    print("Latencies: ", latencies)
+    print("Latencies: ", latencies, flush=True)
+    
+    #collect number of messages lost by every subscriber
+    lost_messages = []
+    for i in range(next_sub_id):
+        f = open(f"mess_lost{i}.txt", "r")
+        lost_messages.append(int(f.read()))
+        f.close()
+        if os.path.exists(f"mess_lost{i}.txt"):
+            os.remove(f"mess_lost{i}.txt")
+    print("Lost messages", lost_messages, flush=True)
     
     # create histograms over all the collected data and print other information
     plt.hist(inter_arrival_times)
     plt.hist(number_of_arrivals)
     plt.hist(latencies)
-    print("Avg latencies: ", sum(latencies) / len(latencies))
-    print("Number of completions: ", len(latencies))
-    print("Number of arrivals: ", number_of_arrivals)
-    print("Avg arrivals: ", sum(number_of_arrivals) / next_pub_id - 1)
+    print("Avg latencies: ", sum(latencies) / len(latencies),flush=True)
+    print("Number of completions: ", len(latencies),flush=True)
+    print("Number of arrivals: ", number_of_arrivals, flush=True)
+    print("Avg arrivals: ", sum(number_of_arrivals) / next_pub_id - 1, flush=True)
     
     # display histogram
     plt.show()

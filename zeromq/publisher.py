@@ -3,7 +3,7 @@ import sys
 from time import sleep, time
 import signal
 from numpy import random
-from utils import create_topic
+from utils import create_topic, CONST
 
 
 
@@ -14,19 +14,21 @@ class Publisher():
         signal.signal(signal.SIGUSR1, self.sigusr1_handler)
 
         # prepare our context and publisher
-        self.port = sys.argv[1]
-        self.id_pub = sys.argv[2]
+        self.ports = CONST.PUBS_PORT
+        self.id_pub = sys.argv[1]
         self.elapsed = 0
         self.previous_sent = 0
         self.counter = 0
+        self.dict = {}
 
         random.seed(int(self.id_pub))
 
         context = zmq.Context()
         socket = context.socket(zmq.PUB)
-        socket.connect(f"tcp://localhost:{self.port}")
+        for port in self.ports:
+            socket.connect(f"tcp://localhost:{port}")
         
-        print(f'[pub #{self.id_pub}] Connected to {self.port} port', flush=True)
+        print(f'[pub #{self.id_pub}] Connected to {self.ports} ports', flush=True)
         
         message = "Hello World! #" + self.id_pub
         
@@ -37,7 +39,12 @@ class Publisher():
             sending_time = int(time() * 1000) # in ms
             self.file.write(str(sending_time - self.previous_sent) + '\n')
             self.previous_sent = sending_time
-            socket.send_string(f"{topic}:{sending_time}:{message}")
+            id_message = self.dict.get(topic, 0)
+            socket.send_string(f"{topic}:{sending_time}:{message}:{self.id_pub}:{id_message}")
+            if id_message == 0:
+                self.dict[topic] = 1
+            else:
+                self.dict[topic] += 1
             self.counter += 1
             print(f"[pub #{self.id_pub}] Sent {topic}:{message}", flush=True)
             sleep(random.exponential(scale=3.0, size=None)/100) # to simulate the random message sending

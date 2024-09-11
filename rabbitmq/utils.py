@@ -33,19 +33,19 @@ def create_node(id, type):
         subscriber_handler.create_subscriber(command)
 
 # delete a publisher or a subscriber
-def delete_node(pid, type):
+def delete_node(pid, type, termination=False):
     candidate = pid
     decision = random.uniform(1, 100) > 50
     if (type == 'publisher'):
-        if decision:
-            publisher_handler.kill_publisher(candidate)
-        else:
+        if decision and termination:
             publisher_handler.close_publisher(candidate)
+        else:
+            publisher_handler.kill_publisher(candidate)
     elif (type == 'subscriber'):
         if decision:
-            subscriber_handler.kill_subscriber(candidate)
-        else:
             subscriber_handler.close_subscriber(candidate)
+        else:
+            subscriber_handler.kill_subscriber(candidate)
 
 # creates a topic
 # [a topic exchange with only the '#' binding, becomes a fanout exchange]

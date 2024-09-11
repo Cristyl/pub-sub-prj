@@ -16,6 +16,7 @@ if __name__ == "__main__":
 
     number_of_publishers  = int(sys.argv[1])
     number_of_subscribers = int(sys.argv[2])
+    number_of_brokers = CONST.NUMBER_OF_BROKERS
     next_pub_id = number_of_publishers
     next_sub_id = number_of_subscribers
 
@@ -25,19 +26,22 @@ if __name__ == "__main__":
     print("[main] -----------------------------", flush=True)
 
     # create the broker first of all
-    create_broker()
+    for broker_id in range(number_of_brokers):
+        create_broker(broker_id)
     sleep(1) # to wait for the broker to be ready
 
     # create the subscribers
     for subscriber_id in range(number_of_subscribers):
-        create_node(CONST.SUBS_PORT, subscriber_id, 'subscriber')
+        create_node(subscriber_id, 'subscriber')
 
     # create the publishers
     # [we create first the subscribers to not risk to loose any message]
     for publisher_id in range(number_of_publishers):
-        create_node(CONST.PUBS_PORT, publisher_id, 'publisher')
+        create_node(publisher_id, 'publisher')
 
+    #variables for loop ending
     elapsed = 0
+    flag = False
 
     # stay into the while loop till there is a pub or a sub
     while number_of_publishers or number_of_subscribers:
@@ -56,17 +60,27 @@ if __name__ == "__main__":
 
         # randomly create a new publisher
         if random.uniform(0, 100) < CONST.CREATION_PROBABILIY and number_of_publishers <= CONST.MAX_PUB:
-            create_node(CONST.PUBS_PORT, next_pub_id, 'publisher')
+            create_node(next_pub_id, 'publisher')
             print(f"[main] Pub #{next_pub_id} has joined", flush=True)
             number_of_publishers += 1
             next_pub_id += 1
 
         # randomly create a new subscriber      
         if random.uniform(0, 100) < CONST.CREATION_PROBABILIY and number_of_subscribers <= CONST.MAX_SUB:
-            create_node(CONST.SUBS_PORT, next_sub_id, 'subscriber')
+            create_node(next_sub_id, 'subscriber')
             print(f"[main] Sub #{next_sub_id} has joined", flush=True)
             number_of_subscribers += 1
             next_sub_id += 1
+
+        # condition checker for broker closure
+        # used mostly to see how the system reacts if one or more brokers are closed
+        # the timing, the pid and the number of closed brokers can be modified
+        '''
+        if time() - start_time >= 15 and flag:
+            delete_broker(broker_handler.pids[0])
+            print(f"[main] Closed the first broker", flush=True)
+            flag = False
+        '''
 
         # end the simulation after a certain time
         if time() - start_time >= CONST.MAX_DURATION:
@@ -75,15 +89,17 @@ if __name__ == "__main__":
 
             for subscriber in subscriber_handler.pids:
                 if subscriber is not None:
-                    delete_node(subscriber, 'subscriber')
+                    delete_node(subscriber, 'subscriber', termination=True)
                     number_of_subscribers -= 1
 
             for publisher in publisher_handler.pids:
                 if publisher is not None:
-                    delete_node(publisher, 'publisher')
+                    delete_node(publisher, 'publisher', termination=True)
                     number_of_publishers -= 1
-            
-            delete_broker()
+
+            for broker in broker_handler.pids:
+                if broker is not None:
+                    delete_broker(broker, terminated=True)
 
     sleep(1) # to wait for all the processes to finish their work
     if (elapsed):
@@ -111,7 +127,7 @@ if __name__ == "__main__":
     
     inter_arrival_times.sort()
     inter_arrival_times = inter_arrival_times[:-next_pub_id]
-    print("Correlation_time: ", inter_arrival_times)
+    print("Correlation_time: ", inter_arrival_times, flush=True)
 
     #collect number of arrivals
     number_of_arrivals = []
@@ -135,16 +151,26 @@ if __name__ == "__main__":
             os.remove(f'latencies{i}.txt')
 
     latencies.sort()
-    print("Latencies: ", latencies)
+    print("Latencies: ", latencies, flush=True)
+
+    #collect number of messages lost by every subscriber
+    lost_messages = []
+    for i in range(next_sub_id):
+        f = open(f"mess_lost{i}.txt", "r")
+        lost_messages.append(int(f.read()))
+        f.close()
+        if os.path.exists(f"mess_lost{i}.txt"):
+            os.remove(f"mess_lost{i}.txt")
+    print("Lost messages: ", lost_messages, flush=True)
     
     # create histogram over all the collected data and print other information
     plt.hist(inter_arrival_times)
     plt.hist(number_of_arrivals)
     plt.hist(latencies)
-    print("Avg latencies: ", sum(latencies) / len(latencies))
-    print("Number of completions: ", len(latencies))
-    print("Number of arrivals: ", number_of_arrivals)
-    print("Avg arrivals: ", sum(number_of_arrivals) / next_pub_id - 1)
+    print("Avg latencies: ", sum(latencies) / len(latencies), flush=True)
+    print("Number of completions: ", len(latencies), flush=True)
+    print("Number of arrivals: ", number_of_arrivals, flush=True)
+    print("Avg arrivals: ", sum(number_of_arrivals) / next_pub_id - 1,flush=True)
     
     # display histogram
     plt.show()
