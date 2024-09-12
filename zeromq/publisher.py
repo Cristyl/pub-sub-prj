@@ -64,5 +64,6 @@ class Publisher():
         self.file.close()
         with open(f'counter{self.id_pub}.txt', 'w') as f:
             f.write(str(self.counter))
+        sys.exit(0)
 
 Publisher()
