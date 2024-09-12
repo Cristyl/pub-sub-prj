@@ -14,7 +14,7 @@ class Subscriber():
         # prepare our subscriber
         self.exchange = CONST.EXCHANGE_NAME
         self.id_sub = sys.argv[1]
-        self.binding_keys = create_topic('subscriber')
+        self.binding_keys = (create_topic('subscriber')).split(" ")
         self.ports = [5672, 5673, 5674]
         self.connection = None
         self.channel = None

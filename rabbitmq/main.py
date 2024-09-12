@@ -33,7 +33,7 @@ if __name__ == "__main__":
     # [we create first the subscribers to not risk to loose any message]
     for publisher_id in range(number_of_publishers):
         create_node(publisher_id, 'publisher')
-    
+
     # variables for loop ending
     elapsed = 0
     flag = False
@@ -53,7 +53,7 @@ if __name__ == "__main__":
                 number_of_publishers -= 1
                 delete_node(candidate, 'publisher')
 
-        # randomly create a new publisher
+        '''# randomly create a new publisher
         if random.uniform(0, 100) < CONST.CREATION_PROBABILIY and number_of_publishers <= CONST.MAX_PUB:
             create_node(next_pub_id, 'publisher')
             print(f"[main] Pub #{next_pub_id} has joined", flush=True)
@@ -65,7 +65,7 @@ if __name__ == "__main__":
             create_node(next_sub_id, 'subscriber')
             print(f"[main] Sub #{next_sub_id} has joined", flush=True)
             number_of_subscribers += 1
-            next_sub_id += 1
+            next_sub_id += 1'''
 
         # condition checker for rabbitmq node closure
         # used mostly to see how the system reacts if one or more nodes are closed
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     sleep(2) # only for a GUI motivation
     print("Performing the distribution...", flush=True)
 
-    #collect correlations times
+    # collect inter arrival times
     inter_arrival_times = []
     for i in range(next_pub_id):
         f = open(f"inter{i}.txt", "r")
@@ -118,33 +118,59 @@ if __name__ == "__main__":
     
     inter_arrival_times.sort()
     inter_arrival_times = inter_arrival_times[:-next_pub_id]
-    print("Inter arrival times: ", inter_arrival_times, flush=True)
+    
+    num_bins = 10
+    bin_size = inter_arrival_times[-1] / num_bins
+    bin_labels = []
+    bin_data = []
+    next = 0
+    for i in range(num_bins):
+        x1 = round((i*0.1) + next, 2)
+        x2 = round(x1 + bin_size, 2)
+        bin_labels.append(f"{x1}-{x2}")
+        next += bin_size
+        bin_data.append(0)
 
-    #collect number of arrivals
-    number_of_arrivals = []
+    for time in inter_arrival_times:
+        for i in range(num_bins):
+            interval = bin_labels[i].split("-")
+            if(time >= float(interval[0]) and time <= float(interval[1])):
+                bin_data[i] += 1
+                break
+
+    # collect number of arrivals
+    number_of_arrivals = [0, 0, 0, 0, 0, 0, 0]
     for i in range(next_pub_id):
         f = open(f"counter{i}.txt", "r")
         line = f.readline()
-        number_of_arrivals.append(int(line))
+        number_of_arrivals[i] = int(line)
         f.close()
         if os.path.exists(f'counter{i}.txt'):
             os.remove(f'counter{i}.txt')
     
-    #collect latencies
-    latencies = []
-    for i in range(next_sub_id):
+    # collect latencies
+    completions = [0, 0, 0, 0, 0, 0, 0]
+    latencies   = [0, 0, 0, 0, 0, 0, 0]
+    for i in range(next_sub_id): #number_of_subscribers?
+        latencies_cont = 0
         f = open(f"latencies{i}.txt", "r")
         lines = f.readlines()
-        for line in lines:
-            latencies.append(int(line.strip()))
         f.close()
+        
+        for line in lines:
+            print(i)
+            latencies[i] += int(line.strip())
+            latencies_cont += 1
+
+        latencies[i] /= latencies_cont
+        completions[i] = latencies_cont
+        
         if os.path.exists(f'latencies{i}.txt'):
             os.remove(f'latencies{i}.txt')
 
     latencies.sort()
-    print("Latencies: ", latencies, flush=True)
     
-    #collect number of messages lost by every subscriber
+    # collect number of messages lost by every subscriber
     lost_messages = []
     for i in range(next_sub_id):
         f = open(f"mess_lost{i}.txt", "r")
@@ -152,16 +178,49 @@ if __name__ == "__main__":
         f.close()
         if os.path.exists(f"mess_lost{i}.txt"):
             os.remove(f"mess_lost{i}.txt")
-    print("Lost messages", lost_messages, flush=True)
     
+    # TODO: terminate the needed formulas and print all the related expected results of the system in the section below
+    T = CONST.MAX_DURATION      # system observation interval
+    A = sum(number_of_arrivals) # num of arrivals in T
+    C = sum(completions)        # num of completions in T
+    l = A / T                   # arrival rate
+    X = C / T                   # throughput
+    #B = #?                     # busy period of time in T
+    #U = B / T                  # utilization (law)
+    #S = #?                     # average service time per completion
+    #R = #?                     # average response time
+    #N = R * X                  # little law
+    #l<= 1/S                    # stability condition <- to print it as well
+
+    print("-----------Information obtained by the simulation-----------")
+    #print("Lost messages", lost_messages, flush=True)
+    #print("Mean latency of the system: ", sum(latencies) / len(latencies),flush=True)
+    #print("Number of completions: ", sum(completions),flush=True)
+    #print("Number of arrivals: ", sum(number_of_arrivals), flush=True)
+    #print("Avg arrivals: ", sum(number_of_arrivals) / next_pub_id - 1, flush=True)
+    print("------------------------------------------------------------")
+
     # create histograms over all the collected data and print other information
-    plt.hist(inter_arrival_times)
-    plt.hist(number_of_arrivals)
-    plt.hist(latencies)
-    print("Avg latencies: ", sum(latencies) / len(latencies),flush=True)
-    print("Number of completions: ", len(latencies),flush=True)
-    print("Number of arrivals: ", number_of_arrivals, flush=True)
-    print("Avg arrivals: ", sum(number_of_arrivals) / next_pub_id - 1, flush=True)
+    pub_labels = ['pub1', 'pub2', 'pub3', 'pub4', 'pub5', 'pub6', 'pub7']
+
+    fig = plt.figure()
+    fig.suptitle('Workload plotting (using RabbitMQ)')
+    gs = fig.add_gridspec(2,2)
+    
+    ax1 = fig.add_subplot(gs[1, :])
+    ax1.bar(bin_labels, bin_data)
+    ax1.set_xlabel('Milliseconds (ms)\nInter-arrival times (estimation of the PDF)')
+    ax1.set_ylabel('#occurrences per bin')
+    
+    ax2 = fig.add_subplot(gs[0, 0])
+    ax2.bar(pub_labels, number_of_arrivals)
+    ax2.set_xlabel('Number of arrivals per pub')
+    ax2.set_ylabel('#messages')
+    
+    ax3 = fig.add_subplot(gs[0, 1])
+    ax3.bar(pub_labels, latencies)
+    ax3.set_xlabel('Mean latencies per pub')
+    ax3.set_ylabel('Milliseconds (ms)')
     
     # display histogram
     plt.show()
