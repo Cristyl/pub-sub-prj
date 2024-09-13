@@ -113,7 +113,7 @@ if __name__ == "__main__":
     print("[main] -----------------------------\n", flush=True)
 
     sleep(2) # only for a GUI motivation
-    print("Performing the distribution...", flush=True)
+    print("Performing the measures...", flush=True)
 
     # collect inter arrival times
     inter_arrival_times = []
@@ -158,9 +158,9 @@ if __name__ == "__main__":
         if os.path.exists(f'counter{i}.txt'):
             os.remove(f'counter{i}.txt')
     
-    print(f"Bin labels: {bin_labels}", flush=True)
-    print(f"Bin data: {bin_data}", flush=True)
-    print(f'Number of arrivals: {number_of_arrivals}')
+    # print(f"Bin labels: {bin_labels}", flush=True)
+    # print(f"Bin data: {bin_data}", flush=True)
+    # print(f'Number of arrivals: {number_of_arrivals}')
     
     # collect latencies
     completions = [0 for _ in range(next_sub_id)]
@@ -183,7 +183,7 @@ if __name__ == "__main__":
 
     latencies.sort()
 
-    print(f"Latencies: {latencies}", flush=True)
+    # print(f"Latencies: {latencies}", flush=True)
     
     # collect number of messages lost by every subscriber
     lost_messages = []
@@ -194,38 +194,36 @@ if __name__ == "__main__":
         if os.path.exists(f"mess_lost{i}.txt"):
             os.remove(f"mess_lost{i}.txt")
     
-    # TODO: terminate the needed formulas and print all the related expected results of the system in the section below
+    # workload parameters and performance measures (taken wrt a time interval T) 
     T = CONST.MAX_DURATION      # system observation interval
-    print(f"System observation interval: {T}s", flush=True)
-    A = sum(number_of_arrivals) # num of arrivals in T
-    C = sum(completions)        # num of completions in T
+    A = sum(number_of_arrivals) # num of arrivals
+    C = sum(completions)        # num of completions
     l = A / T                   # arrival rate
-    print(f"Arrival rate (and also stability condition): {l}",flush=True)
     X = C / T                   # throughput
-    print(f"Throughtput: {X}", flush=True)
-    B = T                     # busy period of time in T
-    print(f"Busy period of time: {B}s", flush=True)
-    U = B / T                  # utilization (law)
-    print(f"Utilization law: {U}", flush=True)
-    S = B / C                     # average service time per completion
-    print(f"Average service for completion: {S}", flush=True)
-    #R = #?                     # average response time
-    #N = R * X                  # little law
-    l = 1/S                    # stability condition <- to print it as well
-
-    print("-----------Information obtained by the simulation-----------")
-    print("Lost messages", lost_messages, flush=True)
-    print("Mean latency of the system: ", sum(latencies) / len(latencies),flush=True)
-    print("Number of completions: ", sum(completions),flush=True)
+    B = T                       # busy period of time
+    U = B / T                   # (resource) utilization (law)
+    S = B / C                   # average service time per completion
+    
+    print("-----------Information obtained by the simulation-------------------------")
+    print(f"System observation interval: {T}s", flush=True)
+    
     print("Number of arrivals: ", sum(number_of_arrivals), flush=True)
-    print("Avg arrivals: ", sum(number_of_arrivals) / next_pub_id - 1, flush=True)
-    print("------------------------------------------------------------")
+    print(f"Mean latency of the system: {sum(latencies) / len(latencies)}ms",flush=True)
+    
+    print("Number of completions: ", sum(completions),flush=True)
+    print("Lost messages: ", sum(lost_messages), flush=True)
+    print(f"Arrival rate: {l} msgs/s",flush=True)
+    print(f"Throughput: {X} completions/s", flush=True)
+    print(f"Busy period of time: ~{B}ms", flush=True)
+    print(f"Resource utilization: ~{U}ms", flush=True)
+    print(f"Average service time per completion: {S}ms", flush=True)
+    print("-------------------------------------------------------------------------")
 
     # create histograms over all the collected data and print other information
     pub_labels = [f'pub{i}' for i in range(next_pub_id)]
-    print(f"Pub labels: {pub_labels}", flush=True)
+    # print(f"Pub labels: {pub_labels}", flush=True)
     sub_labels = [f'sub{i}' for i in range(next_sub_id)]
-    print(f"Sub labels: {sub_labels}", flush=True)
+    # print(f"Sub labels: {sub_labels}", flush=True)
 
     fig = plt.figure()
     fig.suptitle('Workload plotting (using ZeroMQ)')
