@@ -58,7 +58,7 @@ if __name__ == "__main__":
                 number_of_publishers -= 1
                 delete_node(candidate, 'publisher')
 
-        '''# randomly create a new publisher
+        # randomly create a new publisher
         if random.uniform(0, 100) < CONST.CREATION_PROBABILIY and number_of_publishers <= CONST.MAX_PUB:
             create_node(next_pub_id, 'publisher')
             print(f"[main] Pub #{next_pub_id} has joined", flush=True)
@@ -70,17 +70,18 @@ if __name__ == "__main__":
             create_node(next_sub_id, 'subscriber')
             print(f"[main] Sub #{next_sub_id} has joined", flush=True)
             number_of_subscribers += 1
-            next_sub_id += 1'''
+            next_sub_id += 1
 
         # condition checker for broker closure
         # used mostly to see how the system reacts if one or more brokers are closed
         # the timing, the pid and the number of closed brokers can be modified
-        '''
         if time() - start_time >= 15 and flag:
             delete_broker(broker_handler.pids[0])
             print(f"[main] Closed the first broker", flush=True)
             flag = False
-        '''
+            sleep(0.1)
+            delete_broker(broker_handler.pids[1])
+            print(f"[main] Closed the second broker", flush=True)
 
         # end the simulation after a certain time
         if time() - start_time >= CONST.MAX_DURATION:
@@ -148,7 +149,7 @@ if __name__ == "__main__":
                 break
 
     # collect number of arrivals
-    number_of_arrivals = [0, 0, 0, 0, 0, 0, 0]
+    number_of_arrivals = [0 for _ in range(next_pub_id)]
     for i in range(next_pub_id):
         f = open(f"counter{i}.txt", "r")
         line = f.readline()
@@ -157,9 +158,13 @@ if __name__ == "__main__":
         if os.path.exists(f'counter{i}.txt'):
             os.remove(f'counter{i}.txt')
     
+    print(f"Bin labels: {bin_labels}", flush=True)
+    print(f"Bin data: {bin_data}", flush=True)
+    print(f'Number of arrivals: {number_of_arrivals}')
+    
     # collect latencies
-    completions = [0, 0, 0, 0, 0, 0, 0]
-    latencies   = [0, 0, 0, 0, 0, 0, 0]
+    completions = [0 for _ in range(next_sub_id)]
+    latencies   = [0 for _ in range(next_sub_id)]
     for i in range(next_sub_id): #number_of_subscribers?
         latencies_cont = 0
         f = open(f"latencies{i}.txt", "r")
@@ -167,17 +172,18 @@ if __name__ == "__main__":
         f.close()
         
         for line in lines:
-            print(i)
             latencies[i] += int(line.strip())
             latencies_cont += 1
-
-        latencies[i] /= latencies_cont
+        if latencies_cont != 0:
+            latencies[i] /= latencies_cont
         completions[i] = latencies_cont
         
         if os.path.exists(f'latencies{i}.txt'):
             os.remove(f'latencies{i}.txt')
 
     latencies.sort()
+
+    print(f"Latencies: {latencies}", flush=True)
     
     # collect number of messages lost by every subscriber
     lost_messages = []
@@ -190,27 +196,36 @@ if __name__ == "__main__":
     
     # TODO: terminate the needed formulas and print all the related expected results of the system in the section below
     T = CONST.MAX_DURATION      # system observation interval
+    print(f"System observation interval: {T}s", flush=True)
     A = sum(number_of_arrivals) # num of arrivals in T
     C = sum(completions)        # num of completions in T
     l = A / T                   # arrival rate
+    print(f"Arrival rate (and also stability condition): {l}",flush=True)
     X = C / T                   # throughput
-    #B = #?                     # busy period of time in T
-    #U = B / T                  # utilization (law)
-    #S = #?                     # average service time per completion
+    print(f"Throughtput: {X}", flush=True)
+    B = T                     # busy period of time in T
+    print(f"Busy period of time: {B}s", flush=True)
+    U = B / T                  # utilization (law)
+    print(f"Utilization law: {U}", flush=True)
+    S = B / C                     # average service time per completion
+    print(f"Average service for completion: {S}", flush=True)
     #R = #?                     # average response time
     #N = R * X                  # little law
-    #l<= 1/S                    # stability condition <- to print it as well
+    l = 1/S                    # stability condition <- to print it as well
 
     print("-----------Information obtained by the simulation-----------")
-    #print("Lost messages", lost_messages, flush=True)
-    #print("Mean latency of the system: ", sum(latencies) / len(latencies),flush=True)
-    #print("Number of completions: ", sum(completions),flush=True)
-    #print("Number of arrivals: ", sum(number_of_arrivals), flush=True)
-    #print("Avg arrivals: ", sum(number_of_arrivals) / next_pub_id - 1, flush=True)
+    print("Lost messages", lost_messages, flush=True)
+    print("Mean latency of the system: ", sum(latencies) / len(latencies),flush=True)
+    print("Number of completions: ", sum(completions),flush=True)
+    print("Number of arrivals: ", sum(number_of_arrivals), flush=True)
+    print("Avg arrivals: ", sum(number_of_arrivals) / next_pub_id - 1, flush=True)
     print("------------------------------------------------------------")
 
     # create histograms over all the collected data and print other information
-    pub_labels = ['pub1', 'pub2', 'pub3', 'pub4', 'pub5', 'pub6', 'pub7']
+    pub_labels = [f'pub{i}' for i in range(next_pub_id)]
+    print(f"Pub labels: {pub_labels}", flush=True)
+    sub_labels = [f'sub{i}' for i in range(next_sub_id)]
+    print(f"Sub labels: {sub_labels}", flush=True)
 
     fig = plt.figure()
     fig.suptitle('Workload plotting (using ZeroMQ)')
@@ -227,7 +242,7 @@ if __name__ == "__main__":
     ax2.set_ylabel('#messages')
     
     ax3 = fig.add_subplot(gs[0, 1])
-    ax3.bar(pub_labels, latencies)
+    ax3.bar(sub_labels, latencies)
     ax3.set_xlabel('Mean latencies per pub')
     ax3.set_ylabel('Milliseconds (ms)')
     
