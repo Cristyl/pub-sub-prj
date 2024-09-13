@@ -25,7 +25,6 @@ subscriber_handler = Subscriberhandler()
 
 # create a new publisher or a new subscriber
 def create_node(id, type):
-    topic = create_topic(type)
     command = ['python3', type + '.py', str(id)]
     if (type == 'publisher'):
         publisher_handler.create_publisher(command)
@@ -37,12 +36,12 @@ def delete_node(pid, type, termination=False):
     candidate = pid
     decision = random.uniform(1, 100) > 50
     if (type == 'publisher'):
-        if decision and termination:
+        if decision or termination:
             publisher_handler.close_publisher(candidate)
         else:
             publisher_handler.kill_publisher(candidate)
     elif (type == 'subscriber'):
-        if decision:
+        if decision or termination:
             subscriber_handler.close_subscriber(candidate)
         else:
             subscriber_handler.kill_subscriber(candidate)
