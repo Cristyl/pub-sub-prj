@@ -1,5 +1,12 @@
 # pub-sub-prj
-In case you want to test the system on your Linux machine, these are the steps to follow and the terminal commands to use.
+
+In our Computer Engineering course on "Dependable Distributed Systems", we decided to enhance our exam experience by creating a project focused on one of the topics covered in the course. We examined the **performance and dependability** of two solutions that implement the publisher-subscriber paradigm: **RabbitMQ** and **ZeroMQ**. We conducted experiments using our implemented system, which locally simulates a distributed system and utilizes these technologies.
+
+### A brief description of the system
+We implemented **two modes** for running it: one using RabbitMQ and the other using ZeroMQ. When the system is started in a given mode, a fixed number of processes are created, corresponding to the number of publishers and subscribers and the entire communication framework is put up, composed of the mediator (ENS) which facilitates message exchange according to the publish-subscribe paradigm. The mediator consists of a **cluster of three different brokers**: in rabbitmq mode, the cluster is pre-built (we didn't have to write code but just used terminal commands as written in the next section), and is ready at system startup. In zeromq mode, the cluster is constructed after system startup and before communications begin, as it operates as a brokerless library. Message generation by the publishers is **random** and follows an exponential probability distribution. Subscribers can subscribe to the types of data they wish to receive through **topic-based subscriptions**. The topics that nodes send or receive are also generated randomly, and in some cases a **fanout exchange** may occur. Finally, during runtime, there is a certain probability that a publisher or subscriber may crash, voluntarily exit, or join the system.
+
+### How to setup the system
+In case you want to test it on your Linux machine, these are the steps to follow and the terminal commands to use.
 
 1. Download and start the RabbitMQ server on your local machine following the instructions on this [link](https://www.rabbitmq.com/docs/install-debian), choosing the right version of your distribution.
 
